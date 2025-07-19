@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 import json
 import requests
+import re
 
 app = Flask(__name__)
 
@@ -58,11 +59,15 @@ def generate_test_cases():
         test_cases_str = completion.choices[0].message.content
         print("OpenAI Response:", test_cases_str) # Log the response
 
-        # Strip markdown formatting if present
-        if test_cases_str.startswith("```json"):
-            test_cases_str = test_cases_str[7:-4]
+        # Use regex to robustly extract the JSON part of the response
+        json_match = re.search(r"```json\s*([\s\S]*?)\s*```", test_cases_str)
+        if json_match:
+            json_str = json_match.group(1)
+        else:
+            # Fallback for cases where the markdown is missing, assuming the whole string is JSON
+            json_str = test_cases_str
 
-        test_cases = json.loads(test_cases_str)
+        test_cases = json.loads(json_str)
 
         return jsonify(test_cases)
 

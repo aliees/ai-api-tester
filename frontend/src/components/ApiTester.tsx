@@ -110,11 +110,17 @@ const ApiTester: React.FC = () => {
         </div>
         <div className="right-column">
           <div className="card">
-            <TestCasesList
-              testCases={testCases}
-              onRunTests={handleRunTests}
-              runningTests={runningTests}
-            />
+            {loading ? (
+              <div className="loader-container">
+                <div className="loader"></div>
+              </div>
+            ) : (
+              <TestCasesList
+                testCases={testCases}
+                onRunTests={handleRunTests}
+                runningTests={runningTests}
+              />
+            )}
           </div>
           {report && (
             <div className="card">
@@ -125,11 +131,12 @@ const ApiTester: React.FC = () => {
             <div className="card">
               <h2>Test Results</h2>
               {response.map((result: any, index: number) => (
-                <div key={index}>
+                <div key={index} className={`test-result ${result.passed ? 'passed' : 'failed'}`}>
                   <h3>{result.description}</h3>
-                  <p>Passed: {result.passed ? 'Yes' : 'No'}</p>
-                  <p>Status: {result.status || 'N/A'}</p>
-                  <p>Response Time: {result.responseTime}ms</p>
+                  <div className="test-result-details">
+                    <span><strong>Status:</strong> {result.status || 'N/A'}</span>
+                    <span><strong>Response Time:</strong> {result.responseTime}ms</span>
+                  </div>
                   <h4>Response:</h4>
                   <pre>
                     <code>{JSON.stringify(result.response || result.error, null, 2)}</code>
