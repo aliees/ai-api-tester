@@ -43,7 +43,7 @@ def generate_test_cases():
         Generate a list of {num_test_cases} diverse test cases (positive, negative, and edge cases) for the following API endpoint: {url}.
         The API is for: {description}.
         Here is a sample response from the API: {sample_response_str}
-        Provide the output as a JSON array of objects, where each object has 'description', 'method', 'url', 'body', and 'expectedStatus' fields.
+        Provide the output as a JSON array of objects, where each object has 'description', 'method', 'url', 'body', and 'expectedStatus' fields. Do not include any comments in the JSON output.
         API Details: {api_details}
         """
         print("OpenAI Prompt:", prompt) # Log the prompt being sent

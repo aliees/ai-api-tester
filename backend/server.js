@@ -78,6 +78,7 @@ app.post('/run-tests', async (req, res) => {
 
       return {
         description: testCase.description,
+        url: testCase.url,
         passed,
         responseTime,
         status,

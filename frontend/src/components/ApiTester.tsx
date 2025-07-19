@@ -134,6 +134,7 @@ const ApiTester: React.FC = () => {
                 <div key={index} className={`test-result ${result.passed ? 'passed' : 'failed'}`}>
                   <h3>{result.description}</h3>
                   <div className="test-result-details">
+                    <span><strong>URL:</strong> {result.url}</span>
                     <span><strong>Status:</strong> {result.status || 'N/A'}</span>
                     <span><strong>Response Time:</strong> {result.responseTime}ms</span>
                   </div>
