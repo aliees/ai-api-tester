@@ -82,6 +82,7 @@ app.post('/run-tests', async (req, res) => {
         passed,
         responseTime,
         status,
+        payload: testCase.body,
         response: responseBody,
       };
     });

@@ -94,6 +94,18 @@ const ApiTester: React.FC = () => {
     }
   };
 
+  const handleDownloadReport = () => {
+    if (response) {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(response, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "test_report.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+  };
+
   return (
     <div className="App">
       <header>
@@ -124,7 +136,7 @@ const ApiTester: React.FC = () => {
           </div>
           {report && (
             <div className="card">
-              <ReportCard report={report} />
+              <ReportCard report={report} onDownload={handleDownloadReport} />
             </div>
           )}
           {response && (
@@ -138,6 +150,14 @@ const ApiTester: React.FC = () => {
                     <span><strong>Status:</strong> {result.status || 'N/A'}</span>
                     <span><strong>Response Time:</strong> {result.responseTime}ms</span>
                   </div>
+                  {result.payload && (
+                    <>
+                      <h4>Payload:</h4>
+                      <pre>
+                        <code>{JSON.stringify(result.payload, null, 2)}</code>
+                      </pre>
+                    </>
+                  )}
                   <h4>Response:</h4>
                   <pre>
                     <code>{JSON.stringify(result.response || result.error, null, 2)}</code>

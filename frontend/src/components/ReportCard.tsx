@@ -9,9 +9,10 @@ interface Report {
 
 interface ReportCardProps {
   report: Report;
+  onDownload: () => void;
 }
 
-const ReportCard: React.FC<ReportCardProps> = ({ report }) => {
+const ReportCard: React.FC<ReportCardProps> = ({ report, onDownload }) => {
   return (
     <div>
       <h2>Test Report</h2>
@@ -19,6 +20,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report }) => {
       <p>Passed: {report.passed}</p>
       <p>Failed: {report.failed}</p>
       <p>Average Response Time: {report.averageResponseTime}ms</p>
+      <button onClick={onDownload}>Download Report</button>
     </div>
   );
 };
