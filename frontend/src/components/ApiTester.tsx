@@ -8,9 +8,12 @@ const ApiTester: React.FC = () => {
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [testCases, setTestCases] = useState<any[]>([]);
+  const [securityAnalysis, setSecurityAnalysis] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [report, setReport] = useState<any>(null);
   const [runningTests, setRunningTests] = useState(false);
+  const [headers, setHeaders] = useState<string>('');
 
   const handleSendRequest = async (data: {
     url: string;
@@ -36,11 +39,14 @@ const ApiTester: React.FC = () => {
         throw new Error(responseData.error || 'Failed to generate test cases from the server.');
       }
 
-      if (!Array.isArray(responseData)) {
+      if (!responseData.testCases || !Array.isArray(responseData.testCases)) {
         throw new Error('Received an invalid format for test cases.');
       }
 
-      setTestCases(responseData);
+      setTestCases(responseData.testCases);
+      setHeaders(data.headers);
+      setSecurityAnalysis(responseData.securityAnalysis || null);
+      setRecommendations(responseData.recommendations || null);
       setLogs((prevLogs) => [
         ...prevLogs,
         { message: 'Test cases generated successfully!', type: 'success' },
@@ -60,12 +66,13 @@ const ApiTester: React.FC = () => {
     setRunningTests(true);
     setLogs((prevLogs) => [...prevLogs, { message: 'Running tests...', type: 'info' }]);
     try {
+      const testCasesWithHeaders = testCases.map(tc => ({ ...tc, headers }));
       const res = await fetch('http://localhost:3001/run-tests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ testCases }),
+        body: JSON.stringify({ testCases: testCasesWithHeaders }),
       });
       const results = await res.json();
       setResponse(results);
@@ -150,6 +157,14 @@ const ApiTester: React.FC = () => {
                     <span><strong>Status:</strong> {result.status || 'N/A'}</span>
                     <span><strong>Response Time:</strong> {result.responseTime}ms</span>
                   </div>
+                  {result.headers && (
+                    <>
+                      <h4>Headers:</h4>
+                      <pre>
+                        <code>{JSON.stringify(result.headers, null, 2)}</code>
+                      </pre>
+                    </>
+                  )}
                   {result.payload && (
                     <>
                       <h4>Payload:</h4>
@@ -164,6 +179,18 @@ const ApiTester: React.FC = () => {
                   </pre>
                 </div>
               ))}
+            </div>
+          )}
+          {securityAnalysis && (
+            <div className="card">
+              <h2>Security Analysis</h2>
+              <p>{securityAnalysis}</p>
+            </div>
+          )}
+          {recommendations && (
+            <div className="card">
+              <h2>Recommendations</h2>
+              <p>{recommendations}</p>
             </div>
           )}
         </div>

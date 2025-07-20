@@ -43,7 +43,12 @@ def generate_test_cases():
         Generate a list of {num_test_cases} diverse test cases (positive, negative, and edge cases) for the following API endpoint: {url}.
         The API is for: {description}.
         Here is a sample response from the API: {sample_response_str}
-        Provide the output as a JSON array of objects, where each object has 'description', 'method', 'url', 'body', and 'expectedStatus' fields. Do not include any comments in the JSON output.
+        
+        In addition to the test cases, provide a security analysis of the API, highlighting potential vulnerabilities. Also, offer recommendations for how the API could be improved.
+        
+        Provide the output as a single JSON object with three keys: "testCases", "securityAnalysis", and "recommendations".
+        The "testCases" key should contain a JSON array of objects, where each object has 'description', 'method', 'url', 'body', and 'expectedStatus' fields. Do not include any comments in the JSON output.
+        The "securityAnalysis" and "recommendations" keys should contain strings.
         API Details: {api_details}
         """
         print("OpenAI Prompt:", prompt) # Log the prompt being sent

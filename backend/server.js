@@ -52,9 +52,33 @@ app.post('/run-tests', async (req, res) => {
       let passed = false;
 
       try {
+        console.log("Headers sent to fetch:", testCase.headers);
+        const parseHeaders = (headersString) => {
+          if (!headersString || typeof headersString !== 'string') {
+            return {};
+          }
+          try {
+            return JSON.parse(headersString);
+          } catch (e) {
+            const headers = {};
+            const lines = headersString.split('\n');
+            for (const line of lines) {
+              const parts = line.split(':');
+              if (parts.length >= 2) {
+                const key = parts.shift().trim();
+                const value = parts.join(':').trim();
+                if (key) {
+                  headers[key] = value;
+                }
+              }
+            }
+            return headers;
+          }
+        };
+
         const response = await fetch(testCase.url, {
           method: testCase.method,
-          headers: testCase.headers ? JSON.parse(testCase.headers) : {},
+          headers: parseHeaders(testCase.headers),
           body: testCase.body || undefined,
         });
 
@@ -83,6 +107,7 @@ app.post('/run-tests', async (req, res) => {
         responseTime,
         status,
         payload: testCase.body,
+        headers: testCase.headers,
         response: responseBody,
       };
     });
