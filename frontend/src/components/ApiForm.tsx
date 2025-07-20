@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CsvUpload from './CsvUpload';
 
 interface ApiFormProps {
   onSendRequest: (data: {
@@ -9,10 +10,11 @@ interface ApiFormProps {
     numTestCases: number;
     description: string;
   }) => void;
+  onFileLoaded: (data: any[]) => void;
   loading: boolean;
 }
 
-const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, loading }) => {
+const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading }) => {
   const [url, setUrl] = useState('');
   const [method, setMethod] = useState('GET');
   const [headers, setHeaders] = useState('');
@@ -74,6 +76,7 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, loading }) => {
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
+      <CsvUpload onFileLoaded={onFileLoaded} />
       <button type="submit" disabled={loading}>
         {loading ? 'Loading...' : 'Send Request'}
       </button>

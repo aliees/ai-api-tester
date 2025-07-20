@@ -91,7 +91,7 @@ app.post('/run-tests', async (req, res) => {
           responseBody = responseText;
         }
 
-        passed = status === testCase.expectedStatus;
+        passed = status === parseInt(testCase.expectedStatus, 10);
       } catch (error) {
         responseBody = { error: error.message };
         passed = false;
@@ -101,7 +101,7 @@ app.post('/run-tests', async (req, res) => {
       const responseTime = endTime - startTime;
 
       return {
-        description: testCase.description,
+        description: testCase.description || `Test Case #${index + 1}`,
         url: testCase.url,
         passed,
         responseTime,

@@ -121,7 +121,7 @@ const ApiTester: React.FC = () => {
       <main>
         <div className="left-column">
           <div className="card">
-            <ApiForm onSendRequest={handleSendRequest} loading={loading} />
+            <ApiForm onSendRequest={handleSendRequest} onFileLoaded={setTestCases} loading={loading} />
           </div>
           <div className="card">
             <ExecutionLogs logs={logs} />

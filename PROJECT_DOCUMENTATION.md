@@ -72,6 +72,14 @@ The AI microservice is a **Python** application built with the **Flask** framewo
 4.  The backend collects the results of each test, including the status code, response body, and response time.
 5.  The backend returns the results to the frontend.
 6.  The `ApiTester` component displays the detailed results, and the `ReportCard` component shows a summary of the test run.
+### Importing Test Cases from CSV
+
+In addition to generating test cases with AI, you can also import your own test cases from a CSV file.
+
+1.  **Create a CSV file** with the following headers: `url`, `method`, `headers`, `body`, and `expectedStatus`.
+2.  **Click the "Choose File" button** in the "API Request" section of the application.
+3.  **Select your CSV file.** The test cases will be automatically loaded into the "Generated Test Cases" table.
+4.  **Click the "Run Tests" button** to execute the imported test cases.
 
 ## 5. Getting Started
 
