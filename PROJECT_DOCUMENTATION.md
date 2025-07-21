@@ -80,6 +80,12 @@ In addition to generating test cases with AI, you can also import your own test 
 2.  **Click the "Choose File" button** in the "API Request" section of the application.
 3.  **Select your CSV file.** The test cases will be automatically loaded into the "Generated Test Cases" table.
 4.  **Click the "Run Tests" button** to execute the imported test cases.
+### Downloading Reports
+
+The application provides two options for downloading test reports:
+
+*   **JSON Report**: A raw JSON file containing the detailed results of the test run.
+*   **HTML Report**: A professional, self-contained HTML file with a summary of the test results, a chart visualizing the passed and failed tests, and a detailed breakdown of each test case.
 
 ## 5. Getting Started
 

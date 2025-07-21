@@ -43,7 +43,7 @@ const ApiTester: React.FC = () => {
         throw new Error('Received an invalid format for test cases.');
       }
 
-      setTestCases(responseData.testCases);
+      setTestCases(responseData.testCases.map((tc: any) => ({ ...tc, headers: data.headers })));
       setHeaders(data.headers);
       setSecurityAnalysis(responseData.securityAnalysis || null);
       setRecommendations(responseData.recommendations || null);
@@ -66,7 +66,8 @@ const ApiTester: React.FC = () => {
     setRunningTests(true);
     setLogs((prevLogs) => [...prevLogs, { message: 'Running tests...', type: 'info' }]);
     try {
-      const testCasesWithHeaders = testCases.map(tc => ({ ...tc, headers }));
+      const testCasesWithHeaders = testCases.map((tc: any) => ({ ...tc, headers }));
+      console.log("Test cases sent to backend:", testCasesWithHeaders);
       const res = await fetch('http://localhost:3001/run-tests', {
         method: 'POST',
         headers: {
@@ -113,6 +114,28 @@ const ApiTester: React.FC = () => {
     }
   };
 
+  const handleDownloadHtmlReport = async () => {
+    if (response && report) {
+      const res = await fetch('http://localhost:3001/generate-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ testCases: response, report }),
+      });
+      const html = await res.text();
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'test_report.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   return (
     <div className="App">
       <header>
@@ -143,7 +166,7 @@ const ApiTester: React.FC = () => {
           </div>
           {report && (
             <div className="card">
-              <ReportCard report={report} onDownload={handleDownloadReport} />
+              <ReportCard report={report} onDownload={handleDownloadReport} onDownloadHtml={handleDownloadHtmlReport} />
             </div>
           )}
           {response && (

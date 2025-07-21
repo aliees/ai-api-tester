@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    .summary { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; }
+    .test-case { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; }
+    .passed { border-left: 5px solid #28a745; }
+    .failed { border-left: 5px solid #dc3545; }
+    pre { background-color: #f5f5f5; padding: 10px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>API Test Report</h1>
+  <div class="summary">
+    <h2>Summary</h2>
+    <p>Total Tests: <%= report.totalTests %></p>
+    <p>Passed: <%= report.passed %></p>
+    <p>Failed: <%= report.failed %></p>
+    <p>Average Response Time: <%= report.averageResponseTime %>ms</p>
+    <img src="<%= chartImage %>" alt="Test Results Chart">
+  </div>
+  
+  <h2>Test Cases</h2>
+  <% testCases.forEach(testCase => { %>
+    <div class="test-case <%= testCase.passed ? 'passed' : 'failed' %>">
+      <h3><%= testCase.description %></h3>
+      <p><strong>URL:</strong> <%= testCase.url %></p>
+      <p><strong>Status:</strong> <%= testCase.status %></p>
+      <p><strong>Response Time:</strong> <%= testCase.responseTime %>ms</p>
+      <% if (testCase.headers) { %>
+        <h4>Headers:</h4>
+        <pre><code><%= JSON.stringify(testCase.headers, null, 2) %></code></pre>
+      <% } %>
+      <% if (testCase.payload) { %>
+        <h4>Payload:</h4>
+        <pre><code><%= JSON.stringify(testCase.payload, null, 2) %></code></pre>
+      <% } %>
+      <h4>Response:</h4>
+      <pre><code><%= JSON.stringify(testCase.response, null, 2) %></code></pre>
+    </div>
+  <% }); %>
+
+</body>
+</html>

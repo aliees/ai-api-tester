@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const ejs = require('ejs');
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -121,6 +123,53 @@ app.post('/run-tests', async (req, res) => {
   } catch (error) {
     console.error("Error running tests:", error);
     res.status(500).json({ error: "Failed to run tests" });
+  }
+});
+
+app.post('/generate-report', async (req, res) => {
+  const { testCases, report } = req.body;
+  console.log("Generating HTML report...");
+
+  try {
+    const chartJSNodeCanvas = new ChartJSNodeCanvas({ width: 400, height: 200 });
+    const configuration = {
+      type: 'bar',
+      data: {
+        labels: ['Passed', 'Failed'],
+        datasets: [{
+          label: '# of Tests',
+          data: [report.passed, report.failed],
+          backgroundColor: [
+            'rgba(40, 167, 69, 0.2)',
+            'rgba(220, 53, 69, 0.2)'
+          ],
+          borderColor: [
+            'rgba(40, 167, 69, 1)',
+            'rgba(220, 53, 69, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    };
+    const image = await chartJSNodeCanvas.renderToDataURL(configuration);
+    
+    ejs.renderFile(__dirname + '/report_template.ejs', { testCases, report, chartImage: image }, (err, html) => {
+      if (err) {
+        console.error('Error rendering report:', err);
+        return res.status(500).send('Error generating report');
+      }
+      res.send(html);
+    });
+  } catch (error) {
+    console.error("Error generating report:", error);
+    res.status(500).json({ error: "Failed to generate report" });
   }
 });
 
