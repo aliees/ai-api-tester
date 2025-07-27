@@ -80,6 +80,39 @@ In addition to generating test cases with AI, you can also import your own test 
 2.  **Click the "Choose File" button** in the "API Request" section of the application.
 3.  **Select your CSV file.** The test cases will be automatically loaded into the "Generated Test Cases" table.
 4.  **Click the "Run Tests" button** to execute the imported test cases.
+### Chaining Requests with Instructions
+
+The application supports chaining API requests, allowing you to extract a value from the response of one test case and use it in a subsequent test case. This is useful for testing workflows that require authentication or passing data between endpoints.
+
+**Instruction Format:**
+
+To use this feature, add an `instruction` column to your CSV file. The value of this column should be a JSON string with the following format:
+
+```json
+{"extract": {"from": "body", "path": "$.token", "as": "authToken"}}
+```
+
+*   `extract`: The action to perform.
+*   `from`: Where to look for the value (`body` or `header`).
+*   `path`: The [JSONPath](https://jsonpath.com/) to the specific value. `$` represents the root of the JSON response.
+*   `as`: The name of the variable to save the value as (e.g., `authToken`).
+
+**Using Extracted Variables:**
+
+In a subsequent test case, you can use the extracted variable in the `url`, `headers`, or `body` fields using the `{{variable_name}}` syntax.
+
+**Example:**
+
+1.  **Login and Extract Token:**
+    *   **url:** `https://yourapi.com/login`
+    *   **method:** `POST`
+    *   **body:** `{"username": "user", "password": "password"}`
+    *   **instruction:** `{"extract": {"from": "body", "path": "$.token", "as": "authToken"}}`
+
+2.  **Access a Protected Resource:**
+    *   **url:** `https://yourapi.com/data`
+    *   **method:** `GET`
+    *   **headers:** `{"Authorization": "Bearer {{authToken}}"}`
 ### Downloading Reports
 
 The application provides two options for downloading test reports:

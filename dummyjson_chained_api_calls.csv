@@ -1,0 +1,4 @@
+url,method,headers,body,expectedStatus,instruction
+"https://dummyjson.com/users/1","GET","","","200","{""extract"": {""from"": ""body"", ""path"": ""$.id"", ""as"": ""userId""}}"
+"https://dummyjson.com/users/{{userId}}/posts","GET","","","200","{""extract"": {""from"": ""body"", ""path"": ""$.posts[0].id"", ""as"": ""postId""}}"
+"https://dummyjson.com/posts/{{postId}}","GET","","","200",

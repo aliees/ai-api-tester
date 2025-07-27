@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 from openai import OpenAI
 import os
 import json
 import requests
 import re
 
+load_dotenv()
 app = Flask(__name__)
 
 # It's recommended to set the API key as an environment variable
@@ -47,9 +49,12 @@ def generate_test_cases():
         In addition to the test cases, provide a security analysis of the API, highlighting potential vulnerabilities. Also, offer recommendations for how the API could be improved.
         
         Provide the output as a single JSON object with three keys: "testCases", "securityAnalysis", and "recommendations".
-        The "testCases" key should contain a JSON array of objects, where each object has 'description', 'method', 'url', 'body', and 'expectedStatus' fields. Do not include any comments in the JSON output.
+        The "testCases" key should contain a JSON array of objects, where each object has 'description', 'method', 'url', 'body', 'expectedStatus', and an optional 'instruction' field.
+        The 'instruction' field should be a JSON string that defines how to extract a value from the response. For example: '{{"extract": {{"from": "body", "path": "$.token", "as": "authToken"}}}}'.
+        Use this to generate chained requests where appropriate (e.g., login, then use the token).
+        Do not include any comments in the JSON output.
         The "securityAnalysis" and "recommendations" keys should contain strings.
-        API Details: {api_details}
+        API Details: {json.dumps(api_details)}
         """
         print("OpenAI Prompt:", prompt) # Log the prompt being sent
 

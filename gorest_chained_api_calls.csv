@@ -1,0 +1,5 @@
+url,method,headers,body,expectedStatus,instruction
+"https://gorest.co.in/public/v2/users","POST","{}","{""name"":""Test User"", ""gender"":""male"", ""email"":""test.user.12345@test.com"", ""status"":""active""}","201","{""extract"": {""from"": ""body"", ""path"": ""$.id"", ""as"": ""newUserId""}}"
+"https://gorest.co.in/public/v2/users/{{newUserId}}","GET","{}","","200",
+"https://gorest.co.in/public/v2/users/{{newUserId}}","PUT","{}","{""name"":""Test User Updated""}","200",
+"https://gorest.co.in/public/v2/users/{{newUserId}}","DELETE","{}","","204",

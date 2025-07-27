@@ -1,0 +1,5 @@
+url,method,headers,body,expectedStatus,instruction
+"https://jsonplaceholder.typicode.com/posts","POST","","{""title"": ""foo"", ""body"": ""bar"", ""userId"": 1}","201","{""extract"": {""from"": ""body"", ""path"": ""$.id"", ""as"": ""newPostId""}}"
+"https://jsonplaceholder.typicode.com/posts/{{newPostId}}","GET","","","200",
+"https://jsonplaceholder.typicode.com/posts/{{newPostId}}","PUT","","{""id"": {{newPostId}}, ""title"": ""foo"", ""body"": ""baz"", ""userId"": 1}","200",
+"https://jsonplaceholder.typicode.com/posts/{{newPostId}}","DELETE","","","200",

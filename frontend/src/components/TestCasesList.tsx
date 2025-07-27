@@ -6,6 +6,7 @@ interface TestCase {
   url: string;
   body: any;
   expectedStatus: number;
+  instruction?: string;
 }
 
 interface TestCasesListProps {
@@ -33,6 +34,7 @@ const TestCasesList: React.FC<TestCasesListProps> = ({
             <th>URL</th>
             <th>Body</th>
             <th>Expected Status</th>
+            <th>Instruction</th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +49,7 @@ const TestCasesList: React.FC<TestCasesListProps> = ({
                 </pre>
               </td>
               <td>{testCase.expectedStatus}</td>
+              <td>{testCase.instruction}</td>
             </tr>
           ))}
         </tbody>

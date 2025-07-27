@@ -3,6 +3,7 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const ejs = require('ejs');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const { JSONPath } = require('jsonpath-plus');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -22,7 +23,7 @@ app.get('/', (req, res) => {
 
 app.post('/generate-tests', async (req, res) => {
   try {
-    const aiServiceRes = await fetch('http://localhost:5001/generate', {
+    const aiServiceRes = await fetch('http://localhost:5002/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,43 +46,51 @@ app.post('/generate-tests', async (req, res) => {
 
 app.post('/run-tests', async (req, res) => {
   const { testCases } = req.body;
+  const results = [];
+  const extractedVariables = {};
 
   try {
-    const testPromises = testCases.map(async (testCase) => {
+    for (const [index, testCase] of testCases.entries()) {
       const startTime = Date.now();
       let status = 'N/A';
       let responseBody = null;
       let passed = false;
 
+      // Interpolate variables
+      let url = testCase.url;
+      let headers = testCase.headers;
+      let body = testCase.body;
+
+      for (const key in extractedVariables) {
+        const placeholder = `{{${key}}}`;
+        url = url.replace(new RegExp(placeholder, 'g'), extractedVariables[key]);
+        headers = headers.replace(new RegExp(placeholder, 'g'), extractedVariables[key]);
+        body = body.replace(new RegExp(placeholder, 'g'), extractedVariables[key]);
+      }
+
       try {
-        console.log("Headers sent to fetch:", testCase.headers);
         const parseHeaders = (headersString) => {
-          if (!headersString || typeof headersString !== 'string') {
-            return {};
-          }
+          if (!headersString || typeof headersString !== 'string') return {};
           try {
             return JSON.parse(headersString);
           } catch (e) {
-            const headers = {};
-            const lines = headersString.split('\n');
-            for (const line of lines) {
+            const parsed = {};
+            headersString.split('\n').forEach(line => {
               const parts = line.split(':');
               if (parts.length >= 2) {
                 const key = parts.shift().trim();
                 const value = parts.join(':').trim();
-                if (key) {
-                  headers[key] = value;
-                }
+                if (key) parsed[key] = value;
               }
-            }
-            return headers;
+            });
+            return parsed;
           }
         };
 
-        const response = await fetch(testCase.url, {
+        const response = await fetch(url, {
           method: testCase.method,
-          headers: parseHeaders(testCase.headers),
-          body: testCase.body || undefined,
+          headers: parseHeaders(headers),
+          body: body || undefined,
         });
 
         status = response.status;
@@ -94,6 +103,20 @@ app.post('/run-tests', async (req, res) => {
         }
 
         passed = status === parseInt(testCase.expectedStatus, 10);
+
+        if (testCase.instruction) {
+          const instruction = JSON.parse(testCase.instruction);
+          if (instruction.extract) {
+            const { from, path, as } = instruction.extract;
+            let source = from === 'body' ? responseBody : Object.fromEntries(response.headers.entries());
+            if (source) {
+              const extractedValue = JSONPath({ path, json: source, wrap: false });
+              if (extractedValue) {
+                extractedVariables[as] = extractedValue;
+              }
+            }
+          }
+        }
       } catch (error) {
         responseBody = { error: error.message };
         passed = false;
@@ -102,19 +125,17 @@ app.post('/run-tests', async (req, res) => {
       const endTime = Date.now();
       const responseTime = endTime - startTime;
 
-      return {
+      results.push({
         description: testCase.description || `Test Case #${index + 1}`,
-        url: testCase.url,
+        url,
         passed,
         responseTime,
         status,
-        payload: testCase.body,
-        headers: testCase.headers,
+        payload: body,
+        headers,
         response: responseBody,
-      };
-    });
-
-    const results = await Promise.all(testPromises);
+      });
+    }
     
     console.log("--- Sending Final Test Results to Frontend ---");
     console.log(JSON.stringify(results, null, 2));
