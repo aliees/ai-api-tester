@@ -42,24 +42,24 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <form onSubmit={handleSubmit}>
       <h2>Login</h2>
       {error && <p className="error">{error}</p>}
-      <label>
-        Email:
+      <div className="form-group">
+        <label>Email:</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-      </label>
-      <label>
-        Password:
+      </div>
+      <div className="form-group">
+        <label>Password:</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-      </label>
+      </div>
       <button type="submit">Login</button>
     </form>
   );

@@ -47,33 +47,33 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
       <h2>Register</h2>
       {error && <p className="error">{error}</p>}
       {message && <p className="success">{message}</p>}
-      <label>
-        Organization Name:
+      <div className="form-group">
+        <label>Organization Name:</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
-      </label>
-      <label>
-        Email:
+      </div>
+      <div className="form-group">
+        <label>Email:</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-      </label>
-      <label>
-        Password:
+      </div>
+      <div className="form-group">
+        <label>Password:</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-      </label>
+      </div>
       <button type="submit">Register</button>
     </form>
   );
