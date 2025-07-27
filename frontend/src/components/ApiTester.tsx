@@ -3,6 +3,8 @@ import ApiForm from './ApiForm';
 import TestCasesList from './TestCasesList';
 import ExecutionLogs from './ExecutionLogs';
 import ReportCard from './ReportCard';
+import TestSuites from './test-suites/TestSuites';
+import TestSuiteBuilder from './test-suites/TestSuiteBuilder';
 
 const ApiTester: React.FC = () => {
   const [response, setResponse] = useState<any>(null);
@@ -14,6 +16,7 @@ const ApiTester: React.FC = () => {
   const [report, setReport] = useState<any>(null);
   const [runningTests, setRunningTests] = useState(false);
   const [headers, setHeaders] = useState<string>('');
+  const [editingSuite, setEditingSuite] = useState<any | null>(null);
 
   const handleSendRequest = async (data: {
     url: string;
@@ -145,6 +148,12 @@ const ApiTester: React.FC = () => {
         <div className="left-column">
           <div className="card">
             <ApiForm onSendRequest={handleSendRequest} onFileLoaded={setTestCases} loading={loading} />
+          </div>
+          <div className="card">
+            <TestSuites onRunTests={setResponse} onEditSuite={setEditingSuite} />
+          </div>
+          <div className="card">
+            <TestSuiteBuilder suiteToEdit={editingSuite} onSuiteSaved={() => setEditingSuite(null)} />
           </div>
           <div className="card">
             <ExecutionLogs logs={logs} />

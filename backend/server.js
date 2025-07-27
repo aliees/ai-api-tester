@@ -1,15 +1,20 @@
+require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const ejs = require('ejs');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const { JSONPath } = require('jsonpath-plus');
+const db = require('./models');
+const authRoutes = require('./routes/auth');
+const testSuiteRoutes = require('./routes/testSuites');
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
 // Add a middleware to log all requests
 app.use((req, res, next) => {
@@ -17,8 +22,20 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/api/auth', authRoutes);
+app.use('/api/test-suites', testSuiteRoutes);
+
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
+});
+
+app.get('/db-test', async (req, res) => {
+  try {
+    await db.sequelize.authenticate();
+    res.send('Database connection has been established successfully.');
+  } catch (error) {
+    res.status(500).send('Unable to connect to the database: ' + error.message);
+  }
 });
 
 app.post('/generate-tests', async (req, res) => {
@@ -194,6 +211,10 @@ app.post('/generate-report', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+db.sequelize.sync().then(() => {
+  app.listen(port, () => {
+    console.log(`Server is running on port: ${port}`);
+  });
+}).catch(err => {
+  console.error('Unable to sync database:', err);
 });

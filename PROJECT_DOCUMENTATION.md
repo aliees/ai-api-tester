@@ -8,19 +8,35 @@ The primary goal of this tool is to accelerate the testing cycle and improve tes
 
 ## 2. Architecture
 
-The application is built on a three-tiered architecture, consisting of a frontend, a backend, and an AI microservice. This separation of concerns allows for a modular and scalable system.
+The application is built on a multi-tenant SaaS architecture, designed for scalability and security. It consists of a frontend, a backend, an AI microservice, and a PostgreSQL database.
 
 ```mermaid
 graph TD;
-    A[Frontend (React/TypeScript)] -->|HTTP Request| B(Backend (Node.js/Express));
-    B -->|HTTP Request| C(AI Microservice (Python/Flask));
-    C -->|OpenAI API Call| D(OpenAI);
-    D -->|Generated Test Cases| C;
+    subgraph "User Interface"
+        A[Frontend (React/TypeScript)];
+    end
+
+    subgraph "Backend Services"
+        B(Backend (Node.js/Express));
+        C(AI Microservice (Python/Flask));
+        D[PostgreSQL Database];
+    end
+
+    subgraph "External Services"
+        E(OpenAI);
+        F(Target API);
+    end
+
+    A -->|HTTP Request with JWT| B;
+    B -->|CRUD Operations| D;
+    B -->|HTTP Request| C;
+    C -->|OpenAI API Call| E;
+    E -->|Generated Test Cases| C;
     C -->|Test Cases| B;
     B -->|Test Cases| A;
     A -->|Run Tests Request| B;
-    B -->|Executes Tests| E(Target API);
-    E -->|Test Results| B;
+    B -->|Executes Tests| F;
+    F -->|Test Results| B;
     B -->|Test Results| A;
 ```
 
@@ -41,6 +57,13 @@ The frontend is a single-page application built with **React** and **TypeScript*
 The backend is a **Node.js** application using the **Express** framework. It serves as a bridge between the frontend and the AI microservice, and is responsible for executing the test cases.
 
 *   **`server.js`**: The entry point of the backend application. It defines the following API endpoints:
+    *   `POST /api/auth/register`: Registers a new user and organization.
+    *   `POST /api/auth/login`: Logs in a user and returns a JWT.
+    *   `POST /api/test-suites`: Creates a new test suite.
+    *   `GET /api/test-suites`: Retrieves all test suites for the user's organization.
+    *   `GET /api/test-suites/:id`: Retrieves a single test suite.
+    *   `PUT /api/test-suites/:id`: Updates a test suite.
+    *   `DELETE /api/test-suites/:id`: Deletes a test suite.
     *   `POST /generate-tests`: Receives API details from the frontend, forwards them to the AI microservice to generate test cases, and then returns the test cases to the frontend.
     *   `POST /run-tests`: Receives a list of test cases from the frontend, executes each one against the target API, and returns the results.
 
@@ -128,6 +151,7 @@ To run the application on your local machine, follow these steps:
 
 *   Node.js and npm
 *   Python and pip
+*   PostgreSQL
 *   An OpenAI API key
 
 ### Installation and Setup
