@@ -84,8 +84,13 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite }) => {
         <div className="accordion">
           {testSuites.map((suite) => (
             <div key={suite.id} className="accordion-item">
-              <div className="accordion-header" onClick={() => toggleSuite(suite.id)}>
+              <div className="accordion-header">
                 {suite.name}
+                {activeSuiteId === suite.id ? (
+                  <button onClick={() => toggleSuite(suite.id)}>Close</button>
+                ) : (
+                  <button onClick={() => toggleSuite(suite.id)}>View Details</button>
+                )}
               </div>
               {activeSuiteId === suite.id && (
                 <div className="accordion-body">

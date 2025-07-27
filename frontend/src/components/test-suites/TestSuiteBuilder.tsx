@@ -150,13 +150,52 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
               required
             />
           </label>
-          <label>
-            Instruction (JSON):
-            <textarea
-              value={tc.instruction}
-              onChange={(e) => handleTestCaseChange(index, 'instruction', e.target.value)}
-            />
-          </label>
+          <div className="instruction-builder">
+            <h4>Extraction</h4>
+            <label>
+              Extract From:
+              <select
+                value={JSON.parse(tc.instruction || '{}').extract?.from || 'body'}
+                onChange={(e) => {
+                  const instruction = JSON.parse(tc.instruction || '{}');
+                  if (!instruction.extract) instruction.extract = {};
+                  instruction.extract.from = e.target.value;
+                  handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
+                }}
+              >
+                <option value="body">Response Body</option>
+                <option value="header">Response Header</option>
+              </select>
+            </label>
+            <label>
+              Path (JSONPath):
+              <input
+                type="text"
+                placeholder="$.id"
+                value={JSON.parse(tc.instruction || '{}').extract?.path || ''}
+                onChange={(e) => {
+                  const instruction = JSON.parse(tc.instruction || '{}');
+                  if (!instruction.extract) instruction.extract = {};
+                  instruction.extract.path = e.target.value;
+                  handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
+                }}
+              />
+            </label>
+            <label>
+              Variable Name:
+              <input
+                type="text"
+                placeholder="userId"
+                value={JSON.parse(tc.instruction || '{}').extract?.as || ''}
+                onChange={(e) => {
+                  const instruction = JSON.parse(tc.instruction || '{}');
+                  if (!instruction.extract) instruction.extract = {};
+                  instruction.extract.as = e.target.value;
+                  handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
+                }}
+              />
+            </label>
+          </div>
         </div>
       ))}
 
