@@ -1,5 +1,6 @@
 import React from 'react';
 import Papa from 'papaparse';
+import './CsvUpload.css';
 
 interface CsvUploadProps {
   onFileLoaded: (data: any[]) => void;
@@ -19,11 +20,16 @@ const CsvUpload: React.FC<CsvUploadProps> = ({ onFileLoaded }) => {
   };
 
   return (
-    <div>
-      <label>
-        Upload CSV:
-        <input type="file" accept=".csv" onChange={handleFileChange} />
+    <div className="csv-upload">
+      <label htmlFor="csv-input" className="csv-upload-label">
+        Upload Test Cases (CSV)
       </label>
+      <input
+        id="csv-input"
+        type="file"
+        accept=".csv"
+        onChange={handleFileChange}
+      />
     </div>
   );
 };

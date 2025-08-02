@@ -12,7 +12,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <div className="auth-card card">
         {showLogin ? (
           <Login onLogin={onLogin} />
         ) : (

@@ -92,12 +92,18 @@ router.post('/:id/run', async (req, res) => {
   try {
     const testSuite = await db.TestSuite.findOne({
       where: { id: req.params.id, OrganizationId: req.user.organizationId },
-      include: [{ model: db.TestCase, as: 'testCases' }],
+      include: [{
+        model: db.TestCase,
+        as: 'testCases',
+        attributes: ['id', 'sequence', 'description', 'url', 'method', 'headers', 'body', 'expectedStatus', 'instruction']
+      }],
     });
 
     if (!testSuite) {
       return res.status(404).json({ error: 'Test suite not found.' });
     }
+
+    console.log('TestSuite from DB:', JSON.stringify(testSuite, null, 2));
 
     const testCases = testSuite.testCases.sort((a, b) => a.sequence - b.sequence);
     const results = [];
@@ -130,6 +136,11 @@ router.post('/:id/run', async (req, res) => {
           }
         }
 
+        // Automatically add Content-Type if body exists and it's not already set
+        if (body && !parsedHeaders['Content-Type'] && !parsedHeaders['content-type']) {
+          parsedHeaders['Content-Type'] = 'application/json';
+        }
+
         const response = await fetch(url, {
           method: testCase.method,
           headers: parsedHeaders,
@@ -151,12 +162,15 @@ router.post('/:id/run', async (req, res) => {
           try {
             const instruction = JSON.parse(testCase.instruction);
             if (instruction.extract) {
-              const { from, path, as } = instruction.extract;
+              const { from = 'body', path, as } = instruction.extract;
               let source = from === 'body' ? responseBody : Object.fromEntries(response.headers.entries());
               if (source) {
+                console.log('Source for JSONPath:', source);
+                console.log('JSONPath object:', JSONPath);
                 const extractedValue = JSONPath({ path, json: source, wrap: false });
                 if (extractedValue) {
                   extractedVariables[as] = extractedValue;
+                  console.log(`Extracted variable '${as}':`, extractedValue);
                 }
               }
             }

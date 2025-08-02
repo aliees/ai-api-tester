@@ -10,7 +10,12 @@ User.belongsTo(Organization);
 Organization.hasMany(TestSuite);
 TestSuite.belongsTo(Organization);
 
-TestSuite.hasMany(TestCase, { as: 'testCases', onDelete: 'CASCADE', hooks: true });
+TestSuite.hasMany(TestCase, {
+  as: 'testCases',
+  foreignKey: 'TestSuiteId',
+  onDelete: 'CASCADE',
+  hooks: true
+});
 TestCase.belongsTo(TestSuite);
 
 const db = {

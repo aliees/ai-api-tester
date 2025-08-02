@@ -48,8 +48,9 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
       {error && <p className="error">{error}</p>}
       {message && <p className="success">{message}</p>}
       <div className="form-group">
-        <label>Organization Name:</label>
+        <label htmlFor="org-name">Organization Name</label>
         <input
+          id="org-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -57,8 +58,9 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
         />
       </div>
       <div className="form-group">
-        <label>Email:</label>
+        <label htmlFor="register-email">Email</label>
         <input
+          id="register-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -66,8 +68,9 @@ const Register: React.FC<RegisterProps> = ({ onRegister }) => {
         />
       </div>
       <div className="form-group">
-        <label>Password:</label>
+        <label htmlFor="register-password">Password</label>
         <input
+          id="register-password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

@@ -15,14 +15,30 @@ interface ReportCardProps {
 
 const ReportCard: React.FC<ReportCardProps> = ({ report, onDownload, onDownloadHtml }) => {
   return (
-    <div>
+    <div className="card">
       <h2>Test Report</h2>
-      <p>Total Tests: {report.totalTests}</p>
-      <p>Passed: {report.passed}</p>
-      <p>Failed: {report.failed}</p>
-      <p>Average Response Time: {report.averageResponseTime}ms</p>
-      <button onClick={onDownload}>Download JSON Report</button>
-      <button onClick={onDownloadHtml}>Download HTML Report</button>
+      <div className="report-metrics">
+        <div className="metric">
+          <span>Total Tests</span>
+          <p>{report.totalTests}</p>
+        </div>
+        <div className="metric">
+          <span className="text-success">Passed</span>
+          <p className="text-success">{report.passed}</p>
+        </div>
+        <div className="metric">
+          <span className="text-error">Failed</span>
+          <p className="text-error">{report.failed}</p>
+        </div>
+        <div className="metric">
+          <span>Avg. Response Time</span>
+          <p>{report.averageResponseTime.toFixed(2)}ms</p>
+        </div>
+      </div>
+      <div className="button-group">
+        <button onClick={onDownload} className="secondary">Download JSON</button>
+        <button onClick={onDownloadHtml}>Download HTML</button>
+      </div>
     </div>
   );
 };

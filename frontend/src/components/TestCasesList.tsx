@@ -21,11 +21,13 @@ const TestCasesList: React.FC<TestCasesListProps> = ({
   runningTests,
 }) => {
   return (
-    <div>
+    <div className="card">
       <h2>Generated Test Cases</h2>
-      <button onClick={onRunTests} disabled={runningTests || testCases.length === 0}>
-        {runningTests ? 'Running...' : 'Run Tests'}
-      </button>
+      <div className="button-group">
+        <button onClick={onRunTests} disabled={runningTests || testCases.length === 0}>
+          {runningTests ? <div className="loader" /> : 'Run All Tests'}
+        </button>
+      </div>
       <table>
         <thead>
           <tr>
@@ -44,9 +46,7 @@ const TestCasesList: React.FC<TestCasesListProps> = ({
               <td>{testCase.method}</td>
               <td>{testCase.url}</td>
               <td>
-                <pre>
-                  <code>{JSON.stringify(testCase.body, null, 2)}</code>
-                </pre>
+                <pre>{JSON.stringify(testCase.body, null, 2)}</pre>
               </td>
               <td>{testCase.expectedStatus}</td>
               <td>{testCase.instruction}</td>

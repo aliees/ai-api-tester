@@ -1,0 +1,21 @@
+.csv-upload-label {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  color: var(--neutral-light);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.csv-upload-label:hover {
+  opacity: 0.9;
+}
+
+.csv-upload input[type="file"] {
+  display: none;
+}

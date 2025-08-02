@@ -3,39 +3,40 @@ import React, { useState, useEffect } from 'react';
 interface TestSuitesProps {
   onRunTests: (testCases: any[]) => void;
   onEditSuite: (suite: any) => void;
+  refreshKey: number;
 }
 
-const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite }) => {
+const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refreshKey }) => {
   const [testSuites, setTestSuites] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeSuiteId, setActiveSuiteId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchTestSuites = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:3001/api/test-suites', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  const fetchTestSuites = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/api/test-suites', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        if (!res.ok) {
-          throw new Error('Failed to fetch test suites.');
-        }
-
-        const data = await res.json();
-        setTestSuites(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        throw new Error('Failed to fetch test suites.');
       }
-    };
 
+      const data = await res.json();
+      setTestSuites(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchTestSuites();
-  }, []);
+  }, [refreshKey]);
 
   const handleRunSuite = async (suiteId: number) => {
     try {
@@ -51,6 +52,24 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite }) => {
 
       const results = await res.json();
       onRunTests(results);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteSuite = async (suiteId: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3001/api/test-suites/${suiteId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete test suite.');
+      }
+
+      fetchTestSuites();
     } catch (err: any) {
       setError(err.message);
     }
@@ -101,6 +120,7 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite }) => {
                   ))}
                   <button onClick={() => handleRunSuite(suite.id)}>Run</button>
                   <button onClick={() => onEditSuite(suite)}>Edit</button>
+                  <button onClick={() => handleDeleteSuite(suite.id)} className="danger">Delete</button>
                 </div>
               )}
             </div>

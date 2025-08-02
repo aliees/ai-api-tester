@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import ApiForm from './ApiForm';
 import TestCasesList from './TestCasesList';
-import ExecutionLogs from './ExecutionLogs';
-import ReportCard from './ReportCard';
-import TestSuites from './test-suites/TestSuites';
-import TestSuiteBuilder from './test-suites/TestSuiteBuilder';
+import ResultsDisplay from './ResultsDisplay';
 
 const ApiTester: React.FC = () => {
   const [response, setResponse] = useState<any>(null);
@@ -16,7 +13,6 @@ const ApiTester: React.FC = () => {
   const [report, setReport] = useState<any>(null);
   const [runningTests, setRunningTests] = useState(false);
   const [headers, setHeaders] = useState<string>('');
-  const [editingSuite, setEditingSuite] = useState<any | null>(null);
 
   const handleSendRequest = async (data: {
     url: string;
@@ -27,7 +23,7 @@ const ApiTester: React.FC = () => {
     description: string;
   }) => {
     setLoading(true);
-    setLogs([{ message: 'Generating test cases...', type: 'info' }]);
+    setLogs(() => [{ message: 'Generating test cases...', type: 'info' }]);
     try {
       const res = await fetch('http://localhost:3001/generate-tests', {
         method: 'POST',
@@ -50,14 +46,14 @@ const ApiTester: React.FC = () => {
       setHeaders(data.headers);
       setSecurityAnalysis(responseData.securityAnalysis || null);
       setRecommendations(responseData.recommendations || null);
-      setLogs((prevLogs) => [
-        ...prevLogs,
+      setLogs(currentLogs => [
+        ...currentLogs,
         { message: 'Test cases generated successfully!', type: 'success' },
       ]);
     } catch (error: any) {
       setTestCases([]); // Clear old test cases on error
-      setLogs((prevLogs) => [
-        ...prevLogs,
+      setLogs(currentLogs => [
+        ...currentLogs,
         { message: error.message, type: 'error' },
       ]);
     } finally {
@@ -67,7 +63,7 @@ const ApiTester: React.FC = () => {
 
   const handleRunTests = async () => {
     setRunningTests(true);
-    setLogs((prevLogs) => [...prevLogs, { message: 'Running tests...', type: 'info' }]);
+    setLogs(currentLogs => [...currentLogs, { message: 'Running tests...', type: 'info' }]);
     try {
       const testCasesWithHeaders = testCases.map((tc: any) => ({ ...tc, headers }));
       console.log("Test cases sent to backend:", testCasesWithHeaders);
@@ -91,13 +87,13 @@ const ApiTester: React.FC = () => {
         failed,
         averageResponseTime,
       });
-      setLogs((prevLogs) => [
-        ...prevLogs,
+      setLogs(currentLogs => [
+        ...currentLogs,
         { message: 'Tests completed!', type: 'success' },
       ]);
     } catch (error) {
-      setLogs((prevLogs) => [
-        ...prevLogs,
+      setLogs(currentLogs => [
+        ...currentLogs,
         { message: 'Failed to run tests.', type: 'error' },
       ]);
     } finally {
@@ -149,15 +145,6 @@ const ApiTester: React.FC = () => {
           <div className="card">
             <ApiForm onSendRequest={handleSendRequest} onFileLoaded={setTestCases} loading={loading} />
           </div>
-          <div className="card">
-            <TestSuites onRunTests={setResponse} onEditSuite={setEditingSuite} />
-          </div>
-          <div className="card">
-            <TestSuiteBuilder suiteToEdit={editingSuite} onSuiteSaved={() => setEditingSuite(null)} />
-          </div>
-          <div className="card">
-            <ExecutionLogs logs={logs} />
-          </div>
         </div>
         <div className="right-column">
           <div className="card">
@@ -173,46 +160,13 @@ const ApiTester: React.FC = () => {
               />
             )}
           </div>
-          {report && (
-            <div className="card">
-              <ReportCard report={report} onDownload={handleDownloadReport} onDownloadHtml={handleDownloadHtmlReport} />
-            </div>
-          )}
-          {response && (
-            <div className="card">
-              <h2>Test Results</h2>
-              {response.map((result: any, index: number) => (
-                <div key={index} className={`test-result ${result.passed ? 'passed' : 'failed'}`}>
-                  <h3>{result.description}</h3>
-                  <div className="test-result-details">
-                    <span><strong>URL:</strong> {result.url}</span>
-                    <span><strong>Status:</strong> {result.status || 'N/A'}</span>
-                    <span><strong>Response Time:</strong> {result.responseTime}ms</span>
-                  </div>
-                  {result.headers && (
-                    <>
-                      <h4>Headers:</h4>
-                      <pre>
-                        <code>{JSON.stringify(result.headers, null, 2)}</code>
-                      </pre>
-                    </>
-                  )}
-                  {result.payload && (
-                    <>
-                      <h4>Payload:</h4>
-                      <pre>
-                        <code>{JSON.stringify(result.payload, null, 2)}</code>
-                      </pre>
-                    </>
-                  )}
-                  <h4>Response:</h4>
-                  <pre>
-                    <code>{JSON.stringify(result.response || result.error, null, 2)}</code>
-                  </pre>
-                </div>
-              ))}
-            </div>
-          )}
+          <ResultsDisplay
+            response={response}
+            report={report}
+            logs={logs}
+            handleDownloadReport={handleDownloadReport}
+            handleDownloadHtmlReport={handleDownloadHtmlReport}
+          />
           {securityAnalysis && (
             <div className="card">
               <h2>Security Analysis</h2>

@@ -104,9 +104,15 @@ app.post('/run-tests', async (req, res) => {
           }
         };
 
+        const parsedHeaders = parseHeaders(headers);
+        // Automatically add Content-Type if body exists and it's not already set
+        if (body && !parsedHeaders['Content-Type'] && !parsedHeaders['content-type']) {
+          parsedHeaders['Content-Type'] = 'application/json';
+        }
+
         const response = await fetch(url, {
           method: testCase.method,
-          headers: parseHeaders(headers),
+          headers: parsedHeaders,
           body: body || undefined,
         });
 
@@ -124,12 +130,15 @@ app.post('/run-tests', async (req, res) => {
         if (testCase.instruction) {
           const instruction = JSON.parse(testCase.instruction);
           if (instruction.extract) {
-            const { from, path, as } = instruction.extract;
+            const { from = 'body', path, as } = instruction.extract;
             let source = from === 'body' ? responseBody : Object.fromEntries(response.headers.entries());
             if (source) {
+              console.log('Source for JSONPath:', source);
+              console.log('JSONPath object:', JSONPath);
               const extractedValue = JSONPath({ path, json: source, wrap: false });
               if (extractedValue) {
                 extractedVariables[as] = extractedValue;
+                console.log(`Extracted variable '${as}':`, extractedValue);
               }
             }
           }

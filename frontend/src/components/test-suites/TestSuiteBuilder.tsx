@@ -33,7 +33,7 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
         headers: '',
         body: '',
         expectedStatus: 200,
-        instruction: '',
+        instruction: '{"extract":{"from":"body"}}',
       },
     ]);
   };
@@ -62,6 +62,8 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
         body: JSON.stringify({ name, description, testCases }),
       });
 
+      console.log('Saving Test Cases:', testCases);
+
       if (!res.ok) {
         throw new Error('Failed to save test suite.');
       }
@@ -73,49 +75,53 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Test Suite Builder</h2>
-      <label>
-        Name:
+    <div className="card">
+      <h2>{suiteToEdit ? 'Edit Test Suite' : 'Create Test Suite'}</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="suiteName">Suite Name</label>
         <input
+          id="suiteName"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="e.g., User API Tests"
           required
         />
-      </label>
-      <label>
-        Description:
+
+        <label htmlFor="suiteDescription">Description</label>
         <textarea
+          id="suiteDescription"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          placeholder="A collection of tests for the user endpoint."
         />
-      </label>
 
-      <h3>Test Cases</h3>
-      {testCases.map((tc, index) => (
-        <div key={index} className="test-case-builder">
-          <h4>Test Case #{tc.sequence}</h4>
-          <label>
-            Description:
+        <h3>Test Cases</h3>
+        {testCases.map((tc, index) => (
+          <div key={index} className="test-case-builder card">
+            <h4>Test Case #{tc.sequence}</h4>
+            <label htmlFor={`tc-description-${index}`}>Description</label>
             <input
+              id={`tc-description-${index}`}
               type="text"
               value={tc.description}
               onChange={(e) => handleTestCaseChange(index, 'description', e.target.value)}
+              placeholder="e.g., Get user profile"
             />
-          </label>
-          <label>
-            URL:
+
+            <label htmlFor={`tc-url-${index}`}>URL</label>
             <input
+              id={`tc-url-${index}`}
               type="text"
               value={tc.url}
               onChange={(e) => handleTestCaseChange(index, 'url', e.target.value)}
+              placeholder="https://api.example.com/users/1"
               required
             />
-          </label>
-          <label>
-            Method:
+
+            <label htmlFor={`tc-method-${index}`}>Method</label>
             <select
+              id={`tc-method-${index}`}
               value={tc.method}
               onChange={(e) => handleTestCaseChange(index, 'method', e.target.value)}
             >
@@ -124,24 +130,26 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
               <option value="PUT">PUT</option>
               <option value="DELETE">DELETE</option>
             </select>
-          </label>
-          <label>
-            Headers (JSON):
+
+            <label htmlFor={`tc-headers-${index}`}>Headers (JSON)</label>
             <textarea
+              id={`tc-headers-${index}`}
               value={tc.headers}
               onChange={(e) => handleTestCaseChange(index, 'headers', e.target.value)}
+              placeholder='{ "Authorization": "Bearer YOUR_TOKEN" }'
             />
-          </label>
-          <label>
-            Body (JSON):
+
+            <label htmlFor={`tc-body-${index}`}>Body (JSON)</label>
             <textarea
+              id={`tc-body-${index}`}
               value={tc.body}
               onChange={(e) => handleTestCaseChange(index, 'body', e.target.value)}
+              placeholder='{ "key": "value" }'
             />
-          </label>
-          <label>
-            Expected Status:
+
+            <label htmlFor={`tc-status-${index}`}>Expected Status</label>
             <input
+              id={`tc-status-${index}`}
               type="number"
               value={tc.expectedStatus}
               onChange={(e) =>
@@ -149,12 +157,12 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
               }
               required
             />
-          </label>
-          <div className="instruction-builder">
-            <h4>Extraction</h4>
-            <label>
-              Extract From:
+            
+            <div className="instruction-builder">
+              <h5>Data Extraction</h5>
+              <label htmlFor={`extract-from-${index}`}>Extract From</label>
               <select
+                id={`extract-from-${index}`}
                 value={JSON.parse(tc.instruction || '{}').extract?.from || 'body'}
                 onChange={(e) => {
                   const instruction = JSON.parse(tc.instruction || '{}');
@@ -166,44 +174,49 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
                 <option value="body">Response Body</option>
                 <option value="header">Response Header</option>
               </select>
-            </label>
-            <label>
-              Path (JSONPath):
+
+              <label htmlFor={`extract-path-${index}`}>Path</label>
+              <div className="json-path-input">
+                <span>$.</span>
+                <input
+                  id={`extract-path-${index}`}
+                  type="text"
+                  placeholder="id"
+                  value={(JSON.parse(tc.instruction || '{}').extract?.path || '').substring(2)}
+                  onChange={(e) => {
+                    const instruction = JSON.parse(tc.instruction || '{"extract":{"from":"body"}}');
+                    if (!instruction.extract) instruction.extract = { from: 'body' };
+                    instruction.extract.path = `$.${e.target.value}`;
+                    handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
+                  }}
+                />
+              </div>
+
+              <label htmlFor={`extract-as-${index}`}>Variable Name</label>
               <input
-                type="text"
-                placeholder="$.id"
-                value={JSON.parse(tc.instruction || '{}').extract?.path || ''}
-                onChange={(e) => {
-                  const instruction = JSON.parse(tc.instruction || '{}');
-                  if (!instruction.extract) instruction.extract = {};
-                  instruction.extract.path = e.target.value;
-                  handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
-                }}
-              />
-            </label>
-            <label>
-              Variable Name:
-              <input
+                id={`extract-as-${index}`}
                 type="text"
                 placeholder="userId"
                 value={JSON.parse(tc.instruction || '{}').extract?.as || ''}
                 onChange={(e) => {
-                  const instruction = JSON.parse(tc.instruction || '{}');
-                  if (!instruction.extract) instruction.extract = {};
+                  const instruction = JSON.parse(tc.instruction || '{"extract":{"from":"body"}}');
+                  if (!instruction.extract) instruction.extract = { from: 'body' };
                   instruction.extract.as = e.target.value;
                   handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
                 }}
               />
-            </label>
+            </div>
           </div>
+        ))}
+        
+        <div className="button-group">
+          <button type="button" onClick={handleAddTestCase} className="secondary">
+            Add Test Case
+          </button>
+          <button type="submit">Save Test Suite</button>
         </div>
-      ))}
-
-      <button type="button" onClick={handleAddTestCase}>
-        Add Test Case
-      </button>
-      <button type="submit">Save Test Suite</button>
-    </form>
+      </form>
+    </div>
   );
 };
 
