@@ -209,6 +209,7 @@ router.post('/:id/run', async (req, res) => {
       results.push({
         description: testCase.description || `Test Case #${testCase.sequence}`,
         url,
+        method: testCase.method,
         passed,
         responseTime,
         status,
@@ -218,6 +219,7 @@ router.post('/:id/run', async (req, res) => {
       });
     }
     
+    console.log('Final Test Results:', JSON.stringify(results, null, 2));
     res.json(results);
   } catch (error) {
     console.error('Error running test suite:', error);

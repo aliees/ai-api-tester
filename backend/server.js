@@ -154,6 +154,7 @@ app.post('/run-tests', async (req, res) => {
       results.push({
         description: testCase.description || `Test Case #${index + 1}`,
         url,
+        method: testCase.method,
         passed,
         responseTime,
         status,
@@ -165,6 +166,7 @@ app.post('/run-tests', async (req, res) => {
     
     console.log("--- Sending Final Test Results to Frontend ---");
     console.log(JSON.stringify(results, null, 2));
+    console.log('Final Test Results:', JSON.stringify(results, null, 2));
     res.json(results);
 
   } catch (error) {

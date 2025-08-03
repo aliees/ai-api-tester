@@ -88,6 +88,7 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
+        console.log('Full suite details:', data);
         setTestSuites(testSuites.map(s => s.id === suiteId ? data : s));
       }
     }

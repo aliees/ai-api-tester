@@ -22,6 +22,37 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading 
   const [numTestCases, setNumTestCases] = useState(5);
   const [description, setDescription] = useState('');
 
+  const parseCurl = (curl: string) => {
+    const parts = curl.match(/'[^']*'|"[^"]*"|\S+/g) || [];
+    let url = parts[1] || '';
+    let method = 'GET';
+    const headers: { [key: string]: string } = {};
+    let body = '';
+
+    for (let i = 2; i < parts.length; i++) {
+      switch (parts[i]) {
+        case '-X':
+        case '--request':
+          method = parts[++i];
+          break;
+        case '--header':
+          const header = parts[++i].replace(/'/g, '');
+          const [key, value] = header.split(': ');
+          headers[key] = value;
+          break;
+        case '--data-raw':
+          body = parts[++i].replace(/'/g, '');
+          break;
+      }
+    }
+
+    setUrl(url);
+    setMethod(method);
+    setHeaders(JSON.stringify(headers, null, 2));
+    setBody(body);
+  };
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSendRequest({ url, method, headers, body, numTestCases, description });
@@ -83,7 +114,17 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading 
           placeholder="e.g., Fetch user data"
         />
 
-        <CsvUpload onFileLoaded={onFileLoaded} />
+        <div className="button-group">
+          <CsvUpload onFileLoaded={onFileLoaded} />
+          <button type="button" onClick={() => {
+            const curl = prompt('Paste your cURL command:');
+            if (curl) {
+              parseCurl(curl);
+            }
+          }} className="secondary">
+            Import from cURL
+          </button>
+        </div>
         
         <button type="submit" disabled={loading}>
           {loading ? <div className="loader" /> : 'Generate Test Cases'}

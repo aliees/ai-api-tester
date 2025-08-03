@@ -1,6 +1,9 @@
 import React from 'react';
 import ReportCard from './ReportCard';
 import ExecutionLogs from './ExecutionLogs';
+import ResponseAccordion from './ResponseAccordion';
+import PayloadAccordion from './PayloadAccordion';
+import { generateCurl } from '../utils';
 
 interface ResultsDisplayProps {
   response: any[] | null;
@@ -17,6 +20,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   handleDownloadReport,
   handleDownloadHtmlReport,
 }) => {
+  if (response) {
+    console.log('Test Results:', response);
+  }
+
   return (
     <>
       <div className="card">
@@ -42,8 +49,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 </span>
                 {result.description}
               </h3>
+              <button
+                className="copy-curl-button"
+                onClick={() => {
+                  console.log('Result object for cURL:', result);
+                  navigator.clipboard.writeText(generateCurl(result));
+                }}
+              >
+                Copy cURL
+              </button>
               <div className="details-grid">
                 <div><span>URL</span><p>{result.url}</p></div>
+                <div><span>Method</span><p><strong>{result.method}</strong></p></div>
                 <div><span>Status</span><p>{result.status || 'N/A'}</p></div>
                 <div><span>Time</span><p>{result.responseTime}ms</p></div>
               </div>
@@ -55,13 +72,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 </>
               )}
               {result.payload && (
-                <>
-                  <h4>Payload</h4>
-                  <pre>{JSON.stringify(result.payload, null, 2)}</pre>
-                </>
+                <PayloadAccordion payload={result.payload} />
               )}
-              <h4>Response</h4>
-              <pre>{JSON.stringify(result.response || result.error, null, 2)}</pre>
+              <ResponseAccordion response={result.response || result.error} />
             </div>
           ))}
         </div>

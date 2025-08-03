@@ -190,7 +190,10 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
                   onChange={(e) => {
                     const instruction = JSON.parse(tc.instruction || '{"extract":{"from":"body"}}');
                     if (!instruction.extract) instruction.extract = { from: 'body' };
-                    instruction.extract.path = `$.${e.target.value}`;
+                    instruction.extract.path = e.target.value ? `$.${e.target.value}` : '';
+                    if (!instruction.extract.path && !instruction.extract.as) {
+                      delete instruction.extract;
+                    }
                     handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
                   }}
                 />
@@ -206,6 +209,9 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
                   const instruction = JSON.parse(tc.instruction || '{"extract":{"from":"body"}}');
                   if (!instruction.extract) instruction.extract = { from: 'body' };
                   instruction.extract.as = e.target.value;
+                  if (!instruction.extract.path && !instruction.extract.as) {
+                    delete instruction.extract;
+                  }
                   handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
                 }}
               />

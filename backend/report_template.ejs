@@ -27,21 +27,64 @@
   <% testCases.forEach(testCase => { %>
     <div class="test-case <%= testCase.passed ? 'passed' : 'failed' %>">
       <h3><%= testCase.description %></h3>
+      <button class="copy-curl-button" data-test-case="<%= JSON.stringify(testCase) %>">Copy cURL</button>
       <p><strong>URL:</strong> <%= testCase.url %></p>
+      <p><strong>Method:</strong> <%= testCase.method %></p>
       <p><strong>Status:</strong> <%= testCase.status %></p>
       <p><strong>Response Time:</strong> <%= testCase.responseTime %>ms</p>
-      <% if (testCase.headers) { %>
-        <h4>Headers:</h4>
-        <pre><code><%= JSON.stringify(testCase.headers, null, 2) %></code></pre>
-      <% } %>
-      <% if (testCase.payload) { %>
-        <h4>Payload:</h4>
-        <pre><code><%= JSON.stringify(testCase.payload, null, 2) %></code></pre>
-      <% } %>
-      <h4>Response:</h4>
-      <pre><code><%= JSON.stringify(testCase.response, null, 2) %></code></pre>
+      <h4>Request</h4>
+      <pre><code><strong>Headers:</strong><br><%= JSON.stringify(testCase.headers, null, 2) %></code></pre>
+      <pre><code><strong>Body:</strong><br><%= JSON.stringify(testCase.payload, null, 2) %></code></pre>
+      <div class="accordion">
+        <div class="accordion-header">
+          <h4>Response</h4>
+          <button class="accordion-button">View Full Response</button>
+        </div>
+        <div class="accordion-body" style="display: none;">
+          <pre><code><%= JSON.stringify(testCase.response, null, 2) %></code></pre>
+        </div>
+      </div>
     </div>
   <% }); %>
 
 </body>
+<script>
+  const generateCurl = (testCase) => {
+    let curl = `curl --location --request ${testCase.method} '${testCase.url}'`;
+
+    if (testCase.headers) {
+      const headers = JSON.parse(testCase.headers);
+      for (const key in headers) {
+        curl += ` \\\n--header '${key}: ${headers[key]}'`;
+      }
+    }
+
+    if (testCase.payload) {
+      curl += ` \\\n--data-raw '${testCase.payload}'`;
+    }
+
+    return curl;
+  };
+
+  document.querySelectorAll('.accordion-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const accordionBody = button.parentElement.nextElementSibling;
+      if (accordionBody.style.display === 'none') {
+        accordionBody.style.display = 'block';
+        button.textContent = 'Hide Full Response';
+      } else {
+        accordionBody.style.display = 'none';
+        button.textContent = 'View Full Response';
+      }
+    });
+  });
+
+  document.querySelectorAll('.copy-curl-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const testCase = JSON.parse(button.dataset.testCase);
+      const curlCommand = generateCurl(testCase);
+      navigator.clipboard.writeText(curlCommand);
+    });
+  });
+</script>
 </html>
