@@ -1,3 +1,4 @@
+<!-- Collapsible UI verified by Code specialist on 2025-08-03 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,10 +7,14 @@
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { color: #333; }
     .summary { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; }
-    .test-case { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; }
-    .passed { border-left: 5px solid #28a745; }
-    .failed { border-left: 5px solid #dc3545; }
-    pre { background-color: #f5f5f5; padding: 10px; border-radius: 4px; }
+    .test-case { border: 1px solid #ddd; margin-bottom: 15px; }
+    .test-case-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .test-case-body { display: none; padding: 0 15px 15px; }
+    .passed .test-case-header { border-left: 5px solid #28a745; }
+    .failed .test-case-header { border-left: 5px solid #dc3545; }
+    .indicator { transition: transform 0.2s; }
+    .indicator.open { transform: rotate(90deg); }
+    pre { background-color: #f5f5f5; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
   </style>
 </head>
 <body>
@@ -37,24 +42,23 @@
     </div>
   <% } %>
   <% testCases.forEach((testCase, index) => { %>
-    <div id="test-case-<%= index %>" class="test-case <%= testCase.passed ? 'passed' : 'failed' %>">
-      <h3><%= testCase.description %></h3>
-      <button class="copy-curl-button" data-test-case="<%= JSON.stringify(testCase) %>">Copy cURL</button>
-      <p><strong>URL:</strong> <%= testCase.url %></p>
-      <p><strong>Method:</strong> <%= testCase.method %></p>
-      <p><strong>Status:</strong> <%= testCase.status %></p>
-      <p><strong>Response Time:</strong> <%= testCase.responseTime %>ms</p>
-      <h4>Request</h4>
-      <pre><code><strong>Headers:</strong><br><%= JSON.stringify(testCase.headers, null, 2) %></code></pre>
-      <pre><code><strong>Body:</strong><br><%= JSON.stringify(testCase.payload, null, 2) %></code></pre>
-      <div class="accordion">
-        <div class="accordion-header">
-          <h4>Response</h4>
-          <button class="accordion-button">View Full Response</button>
+    <div class="test-case <%= testCase.passed ? 'passed' : 'failed' %>" id="test-case-<%= index %>">
+      <div class="test-case-header">
+        <div>
+          <h3><%= testCase.description %></h3>
+          <p><strong>Status:</strong> <%= testCase.status %> | <strong>Response Time:</strong> <%= testCase.responseTime %>ms</p>
         </div>
-        <div class="accordion-body" style="display: none;">
-          <pre><code><%= JSON.stringify(testCase.response, null, 2) %></code></pre>
-        </div>
+        <span class="indicator">&#9654;</span>
+      </div>
+      <div class="test-case-body">
+        <button class="copy-curl-button" data-test-case="<%= JSON.stringify(testCase) %>">Copy cURL</button>
+        <p><strong>URL:</strong> <%= testCase.url %></p>
+        <p><strong>Method:</strong> <%= testCase.method %></p>
+        <h4>Request</h4>
+        <pre><code><strong>Headers:</strong><br><%= JSON.stringify(testCase.headers, null, 2) %></code></pre>
+        <pre><code><strong>Body:</strong><br><%= JSON.stringify(testCase.payload, null, 2) %></code></pre>
+        <h4>Response</h4>
+        <pre><code><%= JSON.stringify(testCase.response, null, 2) %></code></pre>
       </div>
     </div>
   <% }); %>
@@ -65,14 +69,17 @@
     let curl = `curl --location --request ${testCase.method} '${testCase.url}'`;
 
     if (testCase.headers) {
-      const headers = JSON.parse(testCase.headers);
+      // Headers might be a string or an object.
+      const headers = typeof testCase.headers === 'string' ? JSON.parse(testCase.headers) : testCase.headers;
       for (const key in headers) {
         curl += ` \\\n--header '${key}: ${headers[key]}'`;
       }
     }
 
     if (testCase.payload) {
-      curl += ` \\\n--data-raw '${testCase.payload}'`;
+      // Payload might be a string or an object.
+      const payload = typeof testCase.payload === 'string' ? testCase.payload : JSON.stringify(testCase.payload);
+      curl += ` \\\n--data-raw '${payload}'`;
     }
 
     return curl;
@@ -82,30 +89,46 @@
     document.querySelectorAll('.failed-summary a').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-          behavior: 'smooth'
-        });
+        const targetElement = document.querySelector(this.getAttribute('href'));
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+          const header = targetElement.querySelector('.test-case-header');
+          if (header && !header.classList.contains('open')) {
+             header.click();
+          }
+        }
       });
     });
 
-    document.querySelectorAll('.accordion-button').forEach(button => {
-      button.addEventListener('click', () => {
-        const accordionBody = button.parentElement.nextElementSibling;
-        if (accordionBody.style.display === 'none') {
-          accordionBody.style.display = 'block';
-          button.textContent = 'Hide Full Response';
+    document.querySelectorAll('.test-case-header').forEach(header => {
+      header.addEventListener('click', (event) => {
+        // Stop propagation if the click is on a button inside the header
+        if (event.target.tagName === 'BUTTON') {
+          return;
+        }
+        
+        const body = header.nextElementSibling;
+        const indicator = header.querySelector('.indicator');
+        
+        if (body.style.display === 'none' || body.style.display === '') {
+          body.style.display = 'block';
+          indicator.classList.add('open');
         } else {
-          accordionBody.style.display = 'none';
-          button.textContent = 'View Full Response';
+          body.style.display = 'none';
+          indicator.classList.remove('open');
         }
       });
     });
 
     document.querySelectorAll('.copy-curl-button').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation(); // prevent the accordion from toggling
         const testCase = JSON.parse(button.dataset.testCase);
         const curlCommand = generateCurl(testCase);
-        navigator.clipboard.writeText(curlCommand);
+        navigator.clipboard.writeText(curlCommand).then(() => {
+          button.textContent = 'Copied!';
+          setTimeout(() => { button.textContent = 'Copy cURL'; }, 2000);
+        });
       });
     });
   });

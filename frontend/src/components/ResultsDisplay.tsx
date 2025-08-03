@@ -1,4 +1,4 @@
-import React, { createRef } from 'react';
+import React, { createRef, useState } from 'react';
 import ReportCard from './ReportCard';
 import ExecutionLogs from './ExecutionLogs';
 import ResponseAccordion from './ResponseAccordion';
@@ -21,6 +21,11 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   handleDownloadHtmlReport,
 }) => {
   const testResultRefs = React.useRef<React.RefObject<HTMLDivElement>[]>([]);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const handleToggle = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   if (response) {
     testResultRefs.current = response.map(
@@ -82,52 +87,64 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               ref={testResultRefs.current[index]}
               className={`test-result ${result.passed ? 'passed' : 'failed'}`}
             >
-              <h3>
-                <span className={result.passed ? 'text-success' : 'text-error'}>
-                  {result.passed ? 'PASS' : 'FAIL'}
-                </span>
-                {result.description}
-              </h3>
-              <button
-                className="copy-curl-button"
-                onClick={() => {
-                  console.log('Result object for cURL:', result);
-                  navigator.clipboard.writeText(generateCurl(result));
-                }}
+              <div
+                className="test-result-header"
+                onClick={() => handleToggle(index)}
+                style={{ cursor: 'pointer' }}
               >
-                Copy cURL
-              </button>
-              <div className="details-grid">
-                <div>
-                  <span>URL</span>
-                  <p>{result.url}</p>
-                </div>
-                <div>
-                  <span>Method</span>
-                  <p>
-                    <strong>{result.method}</strong>
-                  </p>
-                </div>
-                <div>
-                  <span>Status</span>
-                  <p>{result.status || 'N/A'}</p>
-                </div>
-                <div>
-                  <span>Time</span>
-                  <p>{result.responseTime}ms</p>
-                </div>
+                <h3>
+                  <span className={result.passed ? 'text-success' : 'text-error'}>
+                    {result.passed ? 'PASS' : 'FAIL'}
+                  </span>{' '}
+                  {result.description}
+                </h3>
               </div>
-
-              {result.headers && (
+              {expandedIndex === index && (
                 <>
-                  <h4>Headers</h4>
-                  <pre>{JSON.stringify(result.headers, null, 2)}</pre>
+                  <button
+                    className="copy-curl-button"
+                    onClick={() => {
+                      console.log('Result object for cURL:', result);
+                      navigator.clipboard.writeText(generateCurl(result));
+                    }}
+                  >
+                    Copy cURL
+                  </button>
+                  <div className="details-grid">
+                    <div>
+                      <span>URL</span>
+                      <p>{result.url}</p>
+                    </div>
+                    <div>
+                      <span>Method</span>
+                      <p>
+                        <strong>{result.method}</strong>
+                      </p>
+                    </div>
+                    <div>
+                      <span>Status</span>
+                      <p>{result.status || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span>Time</span>
+                      <p>{result.responseTime}ms</p>
+                    </div>
+                  </div>
+
+                  {result.headers && (
+                    <>
+                      <h4>Headers</h4>
+                      <pre>{JSON.stringify(result.headers, null, 2)}</pre>
+                    </>
+                  )}
+                  {result.payload && (
+                    <PayloadAccordion payload={result.payload} />
+                  )}
+                  <ResponseAccordion
+                    response={result.response || result.error}
+                  />
                 </>
               )}
-              {result.payload && (
-                <PayloadAccordion payload={result.payload} />
-              )}
-              <ResponseAccordion response={result.response || result.error} />
             </div>
           ))}
         </div>
