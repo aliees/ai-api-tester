@@ -228,6 +228,29 @@ ul {
   font-weight: 600;
 }
 
+.failed-summary {
+  border: 1px solid var(--error-color);
+  background-color: rgba(217, 83, 79, 0.1);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+
+.failed-summary h4 {
+  margin-top: 0;
+  color: var(--error-color);
+}
+
+.failed-summary ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.failed-summary a {
+  color: var(--error-color);
+  text-decoration: underline;
+}
+
 .test-result-details {
   display: flex;
   justify-content: space-between;

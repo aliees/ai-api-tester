@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createRef } from 'react';
 import ReportCard from './ReportCard';
 import ExecutionLogs from './ExecutionLogs';
 import ResponseAccordion from './ResponseAccordion';
@@ -20,9 +20,20 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   handleDownloadReport,
   handleDownloadHtmlReport,
 }) => {
+  const testResultRefs = React.useRef<React.RefObject<HTMLDivElement>[]>([]);
+
   if (response) {
-    console.log('Test Results:', response);
+    testResultRefs.current = response.map(
+      (_, i) => testResultRefs.current[i] ?? createRef()
+    );
   }
+
+  const scrollToTestResult = (index: number) => {
+    testResultRefs.current[index].current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
 
   return (
     <>
@@ -41,8 +52,36 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       {response && (
         <div className="card">
           <h2>Test Results</h2>
+          {response.some(r => !r.passed) && (
+            <div className="failed-summary">
+              <h4>Failed Tests</h4>
+              <ul>
+                {response
+                  .map((result, index) => ({ result, index }))
+                  .filter(({ result }) => !result.passed)
+                  .map(({ result, index }) => (
+                    <li key={index}>
+                      <a
+                        href={`#test-result-${index}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          scrollToTestResult(index);
+                        }}
+                      >
+                        {result.description}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
           {response.map((result: any, index: number) => (
-            <div key={index} className={`test-result ${result.passed ? 'passed' : 'failed'}`}>
+            <div
+              key={index}
+              id={`test-result-${index}`}
+              ref={testResultRefs.current[index]}
+              className={`test-result ${result.passed ? 'passed' : 'failed'}`}
+            >
               <h3>
                 <span className={result.passed ? 'text-success' : 'text-error'}>
                   {result.passed ? 'PASS' : 'FAIL'}
@@ -59,12 +98,26 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 Copy cURL
               </button>
               <div className="details-grid">
-                <div><span>URL</span><p>{result.url}</p></div>
-                <div><span>Method</span><p><strong>{result.method}</strong></p></div>
-                <div><span>Status</span><p>{result.status || 'N/A'}</p></div>
-                <div><span>Time</span><p>{result.responseTime}ms</p></div>
+                <div>
+                  <span>URL</span>
+                  <p>{result.url}</p>
+                </div>
+                <div>
+                  <span>Method</span>
+                  <p>
+                    <strong>{result.method}</strong>
+                  </p>
+                </div>
+                <div>
+                  <span>Status</span>
+                  <p>{result.status || 'N/A'}</p>
+                </div>
+                <div>
+                  <span>Time</span>
+                  <p>{result.responseTime}ms</p>
+                </div>
               </div>
-              
+
               {result.headers && (
                 <>
                   <h4>Headers</h4>

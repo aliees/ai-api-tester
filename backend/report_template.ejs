@@ -24,8 +24,20 @@
   </div>
   
   <h2>Test Cases</h2>
-  <% testCases.forEach(testCase => { %>
-    <div class="test-case <%= testCase.passed ? 'passed' : 'failed' %>">
+  <% if (testCases.some(tc => !tc.passed)) { %>
+    <div class="failed-summary">
+      <h4>Failed Tests</h4>
+      <ul>
+        <% testCases.filter(tc => !tc.passed).forEach((testCase, index) => { %>
+          <li>
+            <a href="#test-case-<%= testCases.findIndex(tc => tc === testCase) %>"><%= testCase.description %></a>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+  <% testCases.forEach((testCase, index) => { %>
+    <div id="test-case-<%= index %>" class="test-case <%= testCase.passed ? 'passed' : 'failed' %>">
       <h3><%= testCase.description %></h3>
       <button class="copy-curl-button" data-test-case="<%= JSON.stringify(testCase) %>">Copy cURL</button>
       <p><strong>URL:</strong> <%= testCase.url %></p>
@@ -66,24 +78,35 @@
     return curl;
   };
 
-  document.querySelectorAll('.accordion-button').forEach(button => {
-    button.addEventListener('click', () => {
-      const accordionBody = button.parentElement.nextElementSibling;
-      if (accordionBody.style.display === 'none') {
-        accordionBody.style.display = 'block';
-        button.textContent = 'Hide Full Response';
-      } else {
-        accordionBody.style.display = 'none';
-        button.textContent = 'View Full Response';
-      }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.failed-summary a').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
     });
-  });
 
-  document.querySelectorAll('.copy-curl-button').forEach(button => {
-    button.addEventListener('click', () => {
-      const testCase = JSON.parse(button.dataset.testCase);
-      const curlCommand = generateCurl(testCase);
-      navigator.clipboard.writeText(curlCommand);
+    document.querySelectorAll('.accordion-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const accordionBody = button.parentElement.nextElementSibling;
+        if (accordionBody.style.display === 'none') {
+          accordionBody.style.display = 'block';
+          button.textContent = 'Hide Full Response';
+        } else {
+          accordionBody.style.display = 'none';
+          button.textContent = 'View Full Response';
+        }
+      });
+    });
+
+    document.querySelectorAll('.copy-curl-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const testCase = JSON.parse(button.dataset.testCase);
+        const curlCommand = generateCurl(testCase);
+        navigator.clipboard.writeText(curlCommand);
+      });
     });
   });
 </script>
