@@ -104,7 +104,7 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
           {testSuites.map((suite) => (
             <div key={suite.id} className="accordion-item">
               <div className="accordion-header">
-                {suite.name}
+                {suite.name} ({suite.testCaseCount} APIs)
                 {activeSuiteId === suite.id ? (
                   <button onClick={() => toggleSuite(suite.id)}>Close</button>
                 ) : (

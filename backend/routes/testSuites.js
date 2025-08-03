@@ -11,8 +11,17 @@ router.use(authenticateToken);
 
 // Get all test suites for the user's organization
 router.get('/', async (req, res) => {
-  const testSuites = await db.TestSuite.findAll({ where: { OrganizationId: req.user.organizationId } });
-  res.json(testSuites);
+  const testSuites = await db.TestSuite.findAll({
+    where: { OrganizationId: req.user.organizationId },
+    include: [{ model: db.TestCase, as: 'testCases', attributes: ['id'] }],
+  });
+  const response = testSuites.map(suite => ({
+    id: suite.id,
+    name: suite.name,
+    description: suite.description,
+    testCaseCount: suite.testCases.length,
+  }));
+  res.json(response);
 });
 
 // Create a new test suite
@@ -52,25 +61,36 @@ router.get('/:id', async (req, res) => {
 // Update a test suite
 router.put('/:id', async (req, res) => {
   const { name, description, testCases } = req.body;
+  const transaction = await db.sequelize.transaction();
 
-  const testSuite = await db.TestSuite.findOne({
-    where: { id: req.params.id, OrganizationId: req.user.organizationId },
-  });
+  try {
+    const testSuite = await db.TestSuite.findOne({
+      where: { id: req.params.id, OrganizationId: req.user.organizationId },
+      transaction,
+    });
 
-  if (!testSuite) {
-    return res.status(404).json({ error: 'Test suite not found.' });
+    if (!testSuite) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Test suite not found.' });
+    }
+
+    await testSuite.update({ name, description }, { transaction });
+
+    if (testCases) {
+      await db.TestCase.destroy({ where: { TestSuiteId: testSuite.id }, transaction });
+      await db.TestCase.bulkCreate(
+        testCases.map((tc) => ({ ...tc, TestSuiteId: testSuite.id })),
+        { transaction }
+      );
+    }
+
+    await transaction.commit();
+    res.json(testSuite);
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Failed to update test suite:', error);
+    res.status(500).json({ error: 'Failed to update test suite.' });
   }
-
-  await testSuite.update({ name, description });
-
-  if (testCases) {
-    await db.TestCase.destroy({ where: { TestSuiteId: testSuite.id } });
-    await db.TestCase.bulkCreate(
-      testCases.map((tc) => ({ ...tc, TestSuiteId: testSuite.id }))
-    );
-  }
-
-  res.json(testSuite);
 });
 
 // Delete a test suite

@@ -9,6 +9,7 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [testCases, setTestCases] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (suiteToEdit) {
@@ -46,6 +47,7 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     const token = localStorage.getItem('token');
     const url = suiteToEdit
       ? `http://localhost:3001/api/test-suites/${suiteToEdit.id}`
@@ -71,6 +73,8 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
       onSuiteSaved();
     } catch (error) {
       // Handle error
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -213,7 +217,9 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
           <button type="button" onClick={handleAddTestCase} className="secondary">
             Add Test Case
           </button>
-          <button type="submit">Save Test Suite</button>
+          <button type="submit" disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Test Suite'}
+          </button>
         </div>
       </form>
     </div>
