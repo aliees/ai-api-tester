@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import TestSuites from './test-suites/TestSuites';
 import TestSuiteBuilder from './test-suites/TestSuiteBuilder';
-
 import ResultsDisplay from './ResultsDisplay';
+import Loader from './Loader';
 
 const TestSuitesPage: React.FC = () => {
   const [editingSuite, setEditingSuite] = useState<any | null>(null);
@@ -10,6 +10,7 @@ const TestSuitesPage: React.FC = () => {
   const [response, setResponse] = useState<any[] | null>(null);
   const [report, setReport] = useState<any | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSuiteSaved = () => {
     setEditingSuite(null);
@@ -71,9 +72,10 @@ const TestSuitesPage: React.FC = () => {
 
   return (
     <div className="test-suites-page">
+      {isLoading && <Loader />}
       <div className="left-column">
         <div className="card">
-          <TestSuites onRunTests={handleRunTests} onEditSuite={setEditingSuite} refreshKey={refreshKey} />
+          <TestSuites onRunTests={handleRunTests} onEditSuite={setEditingSuite} refreshKey={refreshKey} setIsLoading={setIsLoading} />
         </div>
         <div className="card">
           <TestSuiteBuilder suiteToEdit={editingSuite} onSuiteSaved={handleSuiteSaved} />

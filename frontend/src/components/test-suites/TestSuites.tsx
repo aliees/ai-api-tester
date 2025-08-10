@@ -4,13 +4,15 @@ interface TestSuitesProps {
   onRunTests: (testCases: any[]) => void;
   onEditSuite: (suite: any) => void;
   refreshKey: number;
+  setIsLoading: (loading: boolean) => void;
 }
 
-const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refreshKey }) => {
+const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refreshKey, setIsLoading }) => {
   const [testSuites, setTestSuites] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeSuiteId, setActiveSuiteId] = useState<number | null>(null);
+  const [runningSuiteId, setRunningSuiteId] = useState<number | null>(null);
 
   const fetchTestSuites = async () => {
     setLoading(true);
@@ -39,6 +41,8 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
   }, [refreshKey]);
 
   const handleRunSuite = async (suiteId: number) => {
+    setRunningSuiteId(suiteId);
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:3001/api/test-suites/${suiteId}/run`, {
@@ -54,6 +58,9 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
       onRunTests(results);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setRunningSuiteId(null);
+      setIsLoading(false);
     }
   };
 
@@ -119,7 +126,9 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
                       <strong>{tc.method}</strong> {tc.url}
                     </div>
                   ))}
-                  <button onClick={() => handleRunSuite(suite.id)}>Run</button>
+                  <button onClick={() => handleRunSuite(suite.id)} disabled={runningSuiteId === suite.id}>
+                    {runningSuiteId === suite.id ? 'Running...' : 'Run'}
+                  </button>
                   <button onClick={() => onEditSuite(suite)}>Edit</button>
                   <button onClick={() => handleDeleteSuite(suite.id)} className="danger">Delete</button>
                 </div>
