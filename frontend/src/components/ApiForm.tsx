@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
 import CsvUpload from './CsvUpload';
 
 interface ApiFormProps {
@@ -22,46 +23,60 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading 
   const [numTestCases, setNumTestCases] = useState(5);
   const [description, setDescription] = useState('');
 
-  const parseCurl = (curl: string) => {
-    const parts = curl.match(/'[^']*'|"[^"]*"|\S+/g) || [];
-    let url = parts[1] || '';
-    let method = 'GET';
-    const headers: { [key: string]: string } = {};
-    let body = '';
 
-    for (let i = 2; i < parts.length; i++) {
-      switch (parts[i]) {
-        case '-X':
-        case '--request':
-          method = parts[++i];
-          break;
-        case '--header':
-          const header = parts[++i].replace(/'/g, '');
-          const [key, value] = header.split(': ');
-          headers[key] = value;
-          break;
-        case '--data-raw':
-          body = parts[++i].replace(/'/g, '');
-          break;
+
+
+  const handleCurlImport = () => {
+    const curlCommand = prompt('Paste cURL command:');
+    if (curlCommand) {
+      try {
+        const urlRegex = /'([^']*)'/;
+        const urlMatch = curlCommand.match(urlRegex);
+        if (urlMatch) {
+          setUrl(urlMatch[1]);
+        }
+        
+        const methodRegex = /(?:-X|--request)\s+([A-Z]+)/;
+        const methodMatch = curlCommand.match(methodRegex);
+        if (methodMatch) {
+          setMethod(methodMatch[1]);
+        } else if (curlCommand.includes('--data-raw')) {
+          setMethod('POST');
+        }
+
+        const headersRegex = /(?:-H|--header)\s+'([^']*)'/g;
+        const headersObject: { [key: string]: string } = {};
+        let match;
+        while ((match = headersRegex.exec(curlCommand)) !== null) {
+          const [key, value] = match[1].split(/:\s*/);
+          headersObject[key] = value;
+        }
+        setHeaders(JSON.stringify(headersObject, null, 2));
+
+        const bodyRegex = /--data-raw\s+'([^']*)'/;
+        const bodyMatch = curlCommand.match(bodyRegex);
+        if (bodyMatch) {
+          setBody(bodyMatch[1]);
+        }
+      } catch (error) {
+        console.error('Failed to parse cURL command:', error);
+        alert('Invalid cURL command.');
       }
     }
-
-    setUrl(url);
-    setMethod(method);
-    setHeaders(JSON.stringify(headers, null, 2));
-    setBody(body);
   };
-
-
-
+ 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSendRequest({ url, method, headers, body, numTestCases, description });
   };
-
+ 
   return (
     <div className="card">
       <h2>API Test Case Generation</h2>
+      <div className="curl-import">
+        <label>Import from cURL</label>
+        <button type="button" onClick={handleCurlImport}>Import</button>
+      </div>
       <form onSubmit={handleSubmit}>
         <label htmlFor="url">API Endpoint URL</label>
         <input
@@ -82,19 +97,21 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading 
         </select>
 
         <label htmlFor="headers">Headers (JSON)</label>
-        <textarea
+        <TextareaAutosize
           id="headers"
           value={headers}
           onChange={(e) => setHeaders(e.target.value)}
           placeholder='{ "Authorization": "Bearer YOUR_TOKEN" }'
+          minRows={2}
         />
 
         <label htmlFor="body">Request Body (JSON)</label>
-        <textarea
+        <TextareaAutosize
           id="body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder='{ "key": "value" }'
+          minRows={3}
         />
 
         <label htmlFor="numTestCases">Number of Test Cases</label>
@@ -117,14 +134,6 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading 
 
         <div className="button-group">
           <CsvUpload onFileLoaded={onFileLoaded} />
-          <button type="button" onClick={() => {
-            const curl = prompt('Paste your cURL command:');
-            if (curl) {
-              parseCurl(curl);
-            }
-          }} className="secondary">
-            Import from cURL
-          </button>
         </div>
         
         <button type="submit" disabled={loading}>

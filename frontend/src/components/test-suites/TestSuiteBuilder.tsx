@@ -39,6 +39,56 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
     ]);
   };
 
+  const handleImportCurlForTestCase = (index: number) => {
+    const curlCommand = prompt('Paste your cURL command for this test case:');
+    if (curlCommand) {
+      try {
+        const urlRegex = /'([^']*)'/;
+        const urlMatch = curlCommand.match(urlRegex);
+        let url = '';
+        if (urlMatch) {
+          url = urlMatch[1];
+        }
+        
+        let method = 'GET';
+        const methodRegex = /(?:-X|--request)\s+([A-Z]+)/;
+        const methodMatch = curlCommand.match(methodRegex);
+        if (methodMatch) {
+          method = methodMatch[1];
+        } else if (curlCommand.includes('--data-raw')) {
+          method = 'POST';
+        }
+
+        const headersRegex = /(?:-H|--header)\s+'([^']*)'/g;
+        const headersObject: { [key: string]: string } = {};
+        let match;
+        while ((match = headersRegex.exec(curlCommand)) !== null) {
+          const [key, value] = match[1].split(/:\s*/);
+          headersObject[key] = value;
+        }
+        const headers = JSON.stringify(headersObject, null, 2);
+
+        let body = '';
+        const bodyRegex = /--data-raw\s+'([^']*)'/;
+        const bodyMatch = curlCommand.match(bodyRegex);
+        if (bodyMatch) {
+          body = bodyMatch[1];
+        }
+
+        const newTestCases = [...testCases];
+        const tc = newTestCases[index];
+        tc.url = url || tc.url;
+        tc.method = method || tc.method;
+        tc.headers = headers || tc.headers;
+        tc.body = body || tc.body;
+        setTestCases(newTestCases);
+      } catch (error) {
+        console.error('Failed to parse cURL command:', error);
+        alert('Failed to parse cURL command. Please check the format.');
+      }
+    }
+  };
+
   const handleTestCaseChange = (index: number, field: string, value: any) => {
     const newTestCases = [...testCases];
     newTestCases[index][field] = value;
@@ -215,6 +265,15 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
                   handleTestCaseChange(index, 'instruction', JSON.stringify(instruction));
                 }}
               />
+            </div>
+            <div className="button-group">
+                <button
+                  type="button"
+                  onClick={() => handleImportCurlForTestCase(index)}
+                  className="secondary"
+                >
+                  Import from cURL
+                </button>
             </div>
           </div>
         ))}
