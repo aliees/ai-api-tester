@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
@@ -8,6 +9,7 @@ import re
 
 load_dotenv()
 app = Flask(__name__)
+CORS(app)
 
 # It's recommended to set the API key as an environment variable
 # for security reasons.
@@ -84,6 +86,7 @@ def generate_test_cases():
     except Exception as e:
         print("Error:", e) # Log any exceptions
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

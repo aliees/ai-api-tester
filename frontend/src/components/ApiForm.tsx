@@ -13,18 +13,16 @@ interface ApiFormProps {
   }) => void;
   onFileLoaded: (data: any[]) => void;
   loading: boolean;
+  showAiPayloadGenerator?: boolean;
 }
 
-const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading }) => {
+const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading, showAiPayloadGenerator = false }) => {
   const [url, setUrl] = useState('');
   const [method, setMethod] = useState('GET');
   const [headers, setHeaders] = useState('');
   const [body, setBody] = useState('');
   const [numTestCases, setNumTestCases] = useState(5);
   const [description, setDescription] = useState('');
-
-
-
 
   const handleCurlImport = () => {
     const curlCommand = prompt('Paste cURL command:');
@@ -113,6 +111,7 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading 
           placeholder='{ "key": "value" }'
           minRows={3}
         />
+
 
         <label htmlFor="numTestCases">Number of Test Cases</label>
         <input

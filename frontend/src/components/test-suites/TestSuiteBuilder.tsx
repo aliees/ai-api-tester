@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CurlImportModal from '../modals/CurlImportModal';
 
 interface TestSuiteBuilderProps {
   suiteToEdit: any | null;
@@ -10,6 +11,8 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
   const [description, setDescription] = useState('');
   const [testCases, setTestCases] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCurlModalOpen, setIsCurlModalOpen] = useState(false);
+  const [activeTestCaseIndex, setActiveTestCaseIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (suiteToEdit) {
@@ -39,8 +42,7 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
     ]);
   };
 
-  const handleImportCurlForTestCase = (index: number) => {
-    const curlCommand = prompt('Paste your cURL command for this test case:');
+  const handleImportFromCurl = (curlCommand: string, index: number) => {
     if (curlCommand) {
       try {
         const urlRegex = /'([^']*)'/;
@@ -94,6 +96,7 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
     newTestCases[index][field] = value;
     setTestCases(newTestCases);
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,6 +204,7 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
               placeholder='{ "key": "value" }'
             />
 
+
             <label htmlFor={`tc-status-${index}`}>Expected Status</label>
             <input
               id={`tc-status-${index}`}
@@ -269,7 +273,10 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
             <div className="button-group">
                 <button
                   type="button"
-                  onClick={() => handleImportCurlForTestCase(index)}
+                  onClick={() => {
+                    setActiveTestCaseIndex(index);
+                    setIsCurlModalOpen(true);
+                  }}
                   className="secondary"
                 >
                   Import from cURL
@@ -286,9 +293,19 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
             {isSaving ? 'Saving...' : 'Save Test Suite'}
           </button>
         </div>
-      </form>
-    </div>
-  );
+     </form>
+     <CurlImportModal
+       isOpen={isCurlModalOpen}
+       onClose={() => setIsCurlModalOpen(false)}
+       onImport={(curlCommand) => {
+         if (activeTestCaseIndex !== null) {
+           handleImportFromCurl(curlCommand, activeTestCaseIndex);
+         }
+         setIsCurlModalOpen(false);
+       }}
+     />
+   </div>
+ );
 };
 
 export default TestSuiteBuilder;

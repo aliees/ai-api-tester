@@ -40,7 +40,7 @@ app.get('/db-test', async (req, res) => {
 
 app.post('/generate-tests', async (req, res) => {
   try {
-    const aiServiceRes = await fetch('http://localhost:5002/generate', {
+    const aiServiceRes = await fetch('http://localhost:5001/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
