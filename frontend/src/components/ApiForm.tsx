@@ -71,10 +71,6 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading,
   return (
     <div className="card">
       <h2>API Test Case Generation</h2>
-      <div className="curl-import">
-        <label>Import from cURL</label>
-        <button type="button" onClick={handleCurlImport}>Import</button>
-      </div>
       <form onSubmit={handleSubmit}>
         <label htmlFor="url">API Endpoint URL</label>
         <input
@@ -131,8 +127,12 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading,
           placeholder="e.g., Fetch user data"
         />
 
-        <div className="button-group">
+        <div className="button-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <CsvUpload onFileLoaded={onFileLoaded} />
+          <div className="curl-import">
+            {/* <label>Import from cURL</label> */}
+            <button type="button" onClick={handleCurlImport}>Import Curl</button>
+          </div>
         </div>
         
         <button type="submit" disabled={loading}>

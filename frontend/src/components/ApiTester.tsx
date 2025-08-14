@@ -141,45 +141,39 @@ const ApiTester: React.FC = () => {
         <h1>AI-Powered API Tester</h1>
       </header>
       <main>
-        <div className="left-column">
+        <ApiForm onSendRequest={handleSendRequest} onFileLoaded={setTestCases} loading={loading} />
+        {loading ? (
           <div className="card">
-            <ApiForm onSendRequest={handleSendRequest} onFileLoaded={setTestCases} loading={loading} />
+            <div className="loader-container">
+              <div className="loader"></div>
+            </div>
           </div>
-        </div>
-        <div className="right-column">
-          <div className="card">
-            {loading ? (
-              <div className="loader-container">
-                <div className="loader"></div>
-              </div>
-            ) : (
-              <TestCasesList
-                testCases={testCases}
-                onRunTests={handleRunTests}
-                runningTests={runningTests}
-              />
-            )}
-          </div>
-          <ResultsDisplay
-            response={response}
-            report={report}
-            logs={logs}
-            handleDownloadReport={handleDownloadReport}
-            handleDownloadHtmlReport={handleDownloadHtmlReport}
+        ) : (
+          <TestCasesList
+            testCases={testCases}
+            onRunTests={handleRunTests}
+            runningTests={runningTests}
           />
-          {securityAnalysis && (
-            <div className="card">
-              <h2>Security Analysis</h2>
-              <p>{securityAnalysis}</p>
-            </div>
-          )}
-          {recommendations && (
-            <div className="card">
-              <h2>Recommendations</h2>
-              <p>{recommendations}</p>
-            </div>
-          )}
-        </div>
+        )}
+        <ResultsDisplay
+          response={response}
+          report={report}
+          logs={logs}
+          handleDownloadReport={handleDownloadReport}
+          handleDownloadHtmlReport={handleDownloadHtmlReport}
+        />
+        {securityAnalysis && (
+          <div className="card">
+            <h2>Security Analysis</h2>
+            <p>{securityAnalysis}</p>
+          </div>
+        )}
+        {recommendations && (
+          <div className="card">
+            <h2>Recommendations</h2>
+            <p>{recommendations}</p>
+          </div>
+        )}
       </main>
     </div>
   );
