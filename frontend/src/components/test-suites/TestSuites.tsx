@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TestSuiteCard from './TestSuiteCard';
 
 interface TestSuitesProps {
   onRunTests: (testCases: any[]) => void;
@@ -108,32 +109,18 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="accordion">
+        <div>
           {testSuites.map((suite) => (
-            <div key={suite.id} className="accordion-item">
-              <div className="accordion-header">
-                {suite.name} ({suite.testCaseCount} APIs)
-                {activeSuiteId === suite.id ? (
-                  <button onClick={() => toggleSuite(suite.id)}>Close</button>
-                ) : (
-                  <button onClick={() => toggleSuite(suite.id)}>View Details</button>
-                )}
-              </div>
-              {activeSuiteId === suite.id && (
-                <div className="accordion-body">
-                  {suite.testCases && suite.testCases.map((tc: any) => (
-                    <div key={tc.id} className="test-case-summary">
-                      <strong>{tc.method}</strong> {tc.url}
-                    </div>
-                  ))}
-                  <button onClick={() => handleRunSuite(suite.id)} disabled={runningSuiteId === suite.id}>
-                    {runningSuiteId === suite.id ? 'Running...' : 'Run'}
-                  </button>
-                  <button onClick={() => onEditSuite(suite)}>Edit</button>
-                  <button onClick={() => handleDeleteSuite(suite.id)} className="danger">Delete</button>
-                </div>
-              )}
-            </div>
+            <TestSuiteCard
+              key={suite.id}
+              suite={suite}
+              isExpanded={activeSuiteId === suite.id}
+              onToggleExpand={toggleSuite}
+              onRunSuite={handleRunSuite}
+              onEditSuite={onEditSuite}
+              onDeleteSuite={handleDeleteSuite}
+              runningSuiteId={runningSuiteId}
+            />
           ))}
         </div>
       )}

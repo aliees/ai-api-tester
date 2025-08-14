@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import ApiForm from './ApiForm';
-import TestCasesList from './TestCasesList';
 import ResultsDisplay from './ResultsDisplay';
 
 const ApiTester: React.FC = () => {
-  const [response, setResponse] = useState<any>(null);
+  const [response] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [testCases, setTestCases] = useState<any[]>([]);
+  const [, setTestCases] = useState<any[]>([]);
   const [securityAnalysis, setSecurityAnalysis] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
-  const [report, setReport] = useState<any>(null);
-  const [runningTests, setRunningTests] = useState(false);
-  const [headers, setHeaders] = useState<string>('');
+  const [report] = useState<any>(null);
+  const [, setHeaders] = useState<string>('');
 
   const handleSendRequest = async (data: {
     url: string;
@@ -61,45 +59,6 @@ const ApiTester: React.FC = () => {
     }
   };
 
-  const handleRunTests = async () => {
-    setRunningTests(true);
-    setLogs(currentLogs => [...currentLogs, { message: 'Running tests...', type: 'info' }]);
-    try {
-      const testCasesWithHeaders = testCases.map((tc: any) => ({ ...tc, headers }));
-      console.log("Test cases sent to backend:", testCasesWithHeaders);
-      const res = await fetch('http://localhost:3001/run-tests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ testCases: testCasesWithHeaders }),
-      });
-      const results = await res.json();
-      setResponse(results);
-      const passed = results.filter((r: any) => r.passed).length;
-      const failed = results.length - passed;
-      const averageResponseTime =
-        results.reduce((acc: number, r: any) => acc + r.responseTime, 0) /
-        results.length;
-      setReport({
-        totalTests: results.length,
-        passed,
-        failed,
-        averageResponseTime,
-      });
-      setLogs(currentLogs => [
-        ...currentLogs,
-        { message: 'Tests completed!', type: 'success' },
-      ]);
-    } catch (error) {
-      setLogs(currentLogs => [
-        ...currentLogs,
-        { message: 'Failed to run tests.', type: 'error' },
-      ]);
-    } finally {
-      setRunningTests(false);
-    }
-  };
 
   const handleDownloadReport = () => {
     if (response) {
@@ -148,13 +107,7 @@ const ApiTester: React.FC = () => {
               <div className="loader"></div>
             </div>
           </div>
-        ) : (
-          <TestCasesList
-            testCases={testCases}
-            onRunTests={handleRunTests}
-            runningTests={runningTests}
-          />
-        )}
+        ) : null}
         <ResultsDisplay
           response={response}
           report={report}
