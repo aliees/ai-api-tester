@@ -14,6 +14,7 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
   const [error, setError] = useState('');
   const [activeSuiteId, setActiveSuiteId] = useState<number | null>(null);
   const [runningSuiteId, setRunningSuiteId] = useState<number | null>(null);
+  const [editingSuiteId, setEditingSuiteId] = useState<number | null>(null);
 
   const fetchTestSuites = async () => {
     setLoading(true);
@@ -62,6 +63,16 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
     } finally {
       setRunningSuiteId(null);
       setIsLoading(false);
+    }
+  };
+
+  const handleEditSuite = (suite: any) => {
+    if (editingSuiteId === suite.id) {
+      setEditingSuiteId(null);
+      onEditSuite(null);
+    } else {
+      setEditingSuiteId(suite.id);
+      onEditSuite(suite);
     }
   };
 
@@ -117,9 +128,10 @@ const TestSuites: React.FC<TestSuitesProps> = ({ onRunTests, onEditSuite, refres
               isExpanded={activeSuiteId === suite.id}
               onToggleExpand={toggleSuite}
               onRunSuite={handleRunSuite}
-              onEditSuite={onEditSuite}
+              onEditSuite={handleEditSuite}
               onDeleteSuite={handleDeleteSuite}
               runningSuiteId={runningSuiteId}
+              editingSuiteId={editingSuiteId}
             />
           ))}
         </div>

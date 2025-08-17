@@ -16,6 +16,7 @@ interface TestSuiteCardProps {
   onEditSuite: (suite: TestSuite) => void;
   onDeleteSuite: (suiteId: number) => void;
   runningSuiteId: number | null;
+  editingSuiteId: number | null;
 }
 
 const TestSuiteCard: React.FC<TestSuiteCardProps> = ({
@@ -26,6 +27,7 @@ const TestSuiteCard: React.FC<TestSuiteCardProps> = ({
   onEditSuite,
   onDeleteSuite,
   runningSuiteId,
+  editingSuiteId,
 }) => {
   return (
     <div className="test-suite-card">
@@ -41,7 +43,9 @@ const TestSuiteCard: React.FC<TestSuiteCardProps> = ({
           <button onClick={() => onRunSuite(suite.id)} disabled={runningSuiteId === suite.id}>
             {runningSuiteId === suite.id ? 'Running...' : 'Run'}
           </button>
-          <button onClick={() => onEditSuite(suite)}>Edit</button>
+          <button onClick={() => onEditSuite(suite)}>
+            {editingSuiteId === suite.id ? 'Close Edit' : 'Edit'}
+          </button>
           <button onClick={() => onDeleteSuite(suite.id)} className="danger">
             Delete
           </button>

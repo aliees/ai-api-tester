@@ -16,10 +16,30 @@ const TestSuiteBuilder: React.FC<TestSuiteBuilderProps> = ({ suiteToEdit, onSuit
 
   useEffect(() => {
     if (suiteToEdit) {
-      setName(suiteToEdit.name);
-      setDescription(suiteToEdit.description);
-      setTestCases(suiteToEdit.testCases || []);
+      const fetchTestSuite = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:3001/api/test-suites/${suiteToEdit.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!response.ok) {
+            throw new Error('Failed to fetch test suite');
+          }
+          const suiteData = await response.json();
+          setName(suiteData.name);
+          setDescription(suiteData.description);
+          setTestCases(suiteData.testCases || []);
+        } catch (error) {
+          console.error('Error fetching test suite:', error);
+          // Handle error (e.g., show a notification to the user)
+        }
+      };
+
+      fetchTestSuite();
     } else {
+      // Reset form for creating a new suite
       setName('');
       setDescription('');
       setTestCases([]);
