@@ -7,6 +7,8 @@ interface PayloadAccordionProps {
 const PayloadAccordion: React.FC<PayloadAccordionProps> = ({ payload }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const payloadObject = typeof payload === 'string' ? JSON.parse(payload) : payload;
+
   return (
     <div className="accordion">
       <div className="accordion-header" onClick={() => setIsOpen(!isOpen)}>
@@ -18,7 +20,7 @@ const PayloadAccordion: React.FC<PayloadAccordionProps> = ({ payload }) => {
       {isOpen && (
         <div className="accordion-body">
           <pre>
-            <code>{JSON.stringify(JSON.parse(payload), null, 2)}</code>
+            <code>{JSON.stringify(payloadObject, null, 2)}</code>
           </pre>
         </div>
       )}
