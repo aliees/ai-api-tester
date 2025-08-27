@@ -7,6 +7,7 @@ import { generateCurl } from '../utils';
 
 interface ResultsDisplayProps {
   response: any[] | null;
+  testCases?: any[] | null;
   report: any | null;
   logs: any[];
   handleDownloadReport: () => void;
@@ -16,6 +17,7 @@ interface ResultsDisplayProps {
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   response,
   report,
+  testCases,
   logs,
   handleDownloadReport,
   handleDownloadHtmlReport,
@@ -42,6 +44,33 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   return (
     <>
+      {testCases && testCases.length > 0 && (
+        <div className="card">
+          <h2>AI-Generated Test Cases</h2>
+          <table className="test-cases-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Description</th>
+                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Method</th>
+                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>URL</th>
+                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              {testCases.map((tc: any, index: number) => (
+                <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                  <td style={{ padding: '8px' }}>{tc.description}</td>
+                  <td style={{ padding: '8px' }}>{tc.method}</td>
+                  <td style={{ padding: '8px' }}>{tc.url}</td>
+                  <td style={{ padding: '8px' }}>
+                    <pre>{JSON.stringify(tc.payload, null, 2)}</pre>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className="card">
         <ExecutionLogs logs={logs} />
       </div>

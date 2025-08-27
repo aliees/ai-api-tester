@@ -3,9 +3,9 @@ import ApiForm from './ApiForm';
 import ResultsDisplay from './ResultsDisplay';
 
 const ApiTester: React.FC = () => {
-  const [response] = useState<any>(null);
+  const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [, setTestCases] = useState<any[]>([]);
+  const [testCases, setTestCases] = useState<any[]>([]);
   const [securityAnalysis, setSecurityAnalysis] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
@@ -31,7 +31,6 @@ const ApiTester: React.FC = () => {
         body: JSON.stringify(data),
       });
       const responseData = await res.json();
-
       if (!res.ok || responseData.error) {
         throw new Error(responseData.error || 'Failed to generate test cases from the server.');
       }
@@ -40,7 +39,9 @@ const ApiTester: React.FC = () => {
         throw new Error('Received an invalid format for test cases.');
       }
 
-      setTestCases(responseData.testCases.map((tc: any) => ({ ...tc, headers: data.headers })));
+      const newTestCases = responseData.testCases.map((tc: any) => ({ ...tc, headers: data.headers }));
+      setTestCases(newTestCases);
+      setResponse(newTestCases);
       setHeaders(data.headers);
       setSecurityAnalysis(responseData.securityAnalysis || null);
       setRecommendations(responseData.recommendations || null);
@@ -110,6 +111,7 @@ const ApiTester: React.FC = () => {
         ) : null}
         <ResultsDisplay
           response={response}
+          testCases={testCases}
           report={report}
           logs={logs}
           handleDownloadReport={handleDownloadReport}
