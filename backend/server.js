@@ -38,7 +38,7 @@ app.get('/db-test', async (req, res) => {
   }
 });
 
-app.post('/generate-tests', async (req, res) => {
+app.post('/api/generate-tests', async (req, res) => {
   try {
     const aiServiceRes = await fetch('http://localhost:5001/generate', {
       method: 'POST',

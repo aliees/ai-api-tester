@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import CsvUpload from './CsvUpload';
+import CurlImportModal from './modals/CurlImportModal';
 
 interface ApiFormProps {
   onSendRequest: (data: {
@@ -14,18 +15,32 @@ interface ApiFormProps {
   onFileLoaded: (data: any[]) => void;
   loading: boolean;
   showAiPayloadGenerator?: boolean;
+  onApiDetailsChange: (details: {
+    url: string;
+    method: string;
+    headers: string;
+    body: string;
+    numTestCases: number;
+    description: string;
+  }) => void;
+  onGenerateAiPayloads: () => void;
 }
 
-const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading, showAiPayloadGenerator = false }) => {
+const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading, showAiPayloadGenerator = false, onApiDetailsChange, onGenerateAiPayloads }) => {
   const [url, setUrl] = useState('');
   const [method, setMethod] = useState('GET');
   const [headers, setHeaders] = useState('');
   const [body, setBody] = useState('');
   const [numTestCases, setNumTestCases] = useState(5);
   const [description, setDescription] = useState('');
+  const [isCurlModalOpen, setIsCurlModalOpen] = useState(false);
 
-  const handleCurlImport = () => {
-    const curlCommand = prompt('Paste cURL command:');
+  // Notify parent component of state changes
+  useEffect(() => {
+    onApiDetailsChange({ url, method, headers, body, numTestCases, description });
+  }, [url, method, headers, body, numTestCases, description, onApiDetailsChange]);
+
+  const parseCurlCommand = (curlCommand: string) => {
     if (curlCommand) {
       try {
         const urlRegex = /'([^']*)'/;
@@ -51,10 +66,13 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading,
         }
         setHeaders(JSON.stringify(headersObject, null, 2));
 
-        const bodyRegex = /--data-raw\s+'([^']*)'/;
-        const bodyMatch = curlCommand.match(bodyRegex);
-        if (bodyMatch) {
-          setBody(bodyMatch[1]);
+        const dataRawIndex = curlCommand.indexOf('--data-raw');
+        if (dataRawIndex !== -1) {
+          let bodyStr = curlCommand.substring(dataRawIndex + '--data-raw'.length).trim();
+          if ((bodyStr.startsWith("'") && bodyStr.endsWith("'")) || (bodyStr.startsWith('"') && bodyStr.endsWith('"'))) {
+            bodyStr = bodyStr.substring(1, bodyStr.length - 1);
+          }
+          setBody(bodyStr);
         }
       } catch (error) {
         console.error('Failed to parse cURL command:', error);
@@ -131,14 +149,24 @@ const ApiForm: React.FC<ApiFormProps> = ({ onSendRequest, onFileLoaded, loading,
           <CsvUpload onFileLoaded={onFileLoaded} />
           <div className="curl-import">
             {/* <label>Import from cURL</label> */}
-            <button type="button" onClick={handleCurlImport}>Import Curl</button>
+            <button type="button" onClick={() => setIsCurlModalOpen(true)}>Import Curl</button>
           </div>
         </div>
         
         <button type="submit" disabled={loading}>
           {loading ? <div className="loader" /> : 'Generate Test Cases'}
         </button>
+        {/* {showAiPayloadGenerator && (
+          <button type="button" onClick={onGenerateAiPayloads} disabled={loading}>
+            Generate AI Payloads
+          </button>
+        )} */}
       </form>
+      <CurlImportModal
+        isOpen={isCurlModalOpen}
+        onClose={() => setIsCurlModalOpen(false)}
+        onImport={parseCurlCommand}
+      />
     </div>
   );
 };

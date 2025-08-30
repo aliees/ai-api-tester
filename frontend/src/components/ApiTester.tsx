@@ -14,6 +14,15 @@ const ApiTester: React.FC = () => {
   const [runningTests, setRunningTests] = useState(false);
   const [headers, setHeaders] = useState<string>('');
 
+  const [apiDetails, setApiDetails] = useState({
+   url: '',
+   method: 'GET',
+   headers: '',
+   body: '',
+   numTestCases: 5,
+   description: '',
+ });
+
   const handleSendRequest = async (data: {
     url: string;
     method: string;
@@ -25,7 +34,7 @@ const ApiTester: React.FC = () => {
     setLoading(true);
     setLogs(() => [{ message: 'Generating test cases...', type: 'info' }]);
     try {
-      const res = await fetch('http://localhost:3001/generate-tests', {
+      const res = await fetch('http://localhost:3001/api/generate-tests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,11 +70,48 @@ const ApiTester: React.FC = () => {
     }
   };
 
+  const handleAiPayloadGeneration = async () => {
+    setLoading(true);
+    setLogs(currentLogs => [...currentLogs, { message: 'Generating AI payloads...', type: 'info' }]);
+    try {
+      const res = await fetch('http://localhost:5001/generate-payloads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: apiDetails.url,
+          method: apiDetails.method,
+          headers: apiDetails.headers,
+          body: apiDetails.body,
+          numTestCases: apiDetails.numTestCases,
+          description: apiDetails.description,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setTestCases(data.payloads.map((payload: any) => ({
+        ...apiDetails,
+        body: JSON.stringify(payload, null, 2),
+        name: `AI Generated Payload ${Date.now()}`
+      })));
+      setLogs(currentLogs => [...currentLogs, { message: 'AI payloads generated successfully!', type: 'success' }]);
+    } catch (error: any) {
+      setLogs(currentLogs => [...currentLogs, { message: error.message, type: 'error' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRunTests = async () => {
     setRunningTests(true);
     setLogs(currentLogs => [...currentLogs, { message: 'Running tests...', type: 'info' }]);
     try {
-      const testCasesWithHeaders = testCases.map((tc: any) => ({ ...tc, headers }));
+      const testCasesWithHeaders = testCases.map((tc: any) => ({
+        ...tc,
+        body: JSON.stringify(tc.body),
+        headers,
+      }));
       console.log("Test cases sent to backend:", testCasesWithHeaders);
       const res = await fetch('http://localhost:3001/run-tests', {
         method: 'POST',
@@ -143,7 +189,14 @@ const ApiTester: React.FC = () => {
       <main>
         <div className="left-column">
           <div className="card">
-            <ApiForm onSendRequest={handleSendRequest} onFileLoaded={setTestCases} loading={loading} />
+            <ApiForm
+              onSendRequest={handleSendRequest}
+              onFileLoaded={setTestCases}
+              loading={loading}
+              onApiDetailsChange={setApiDetails}
+              showAiPayloadGenerator={true}
+              onGenerateAiPayloads={handleAiPayloadGeneration}
+            />
           </div>
         </div>
         <div className="right-column">
